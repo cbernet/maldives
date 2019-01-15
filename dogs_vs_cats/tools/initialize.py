@@ -153,7 +153,7 @@ if 1:
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=4000/train_batch_size,  
-        epochs=50,
+        epochs=100,
         validation_data=validation_generator,
         validation_steps=1000/val_batch_size,  
         verbose=1)
