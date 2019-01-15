@@ -132,6 +132,7 @@ x = layers.Flatten()(x)
 x = layers.Dropout(0.5)(x)
 x = layers.Dense(512, activation='relu')(x)
 x = layers.Dense(512, activation='relu')(x)
+x = layers.Dense(512, activation='relu')(x)
 
 # Create output layer with a single node and sigmoid activation
 output = layers.Dense(1, activation='sigmoid')(x)
@@ -153,7 +154,7 @@ if 1:
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=4000/train_batch_size,  
-        epochs=100,
+        epochs=50,
         validation_data=validation_generator,
         validation_steps=1000/val_batch_size,  
         verbose=1)
