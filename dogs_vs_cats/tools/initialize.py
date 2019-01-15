@@ -130,9 +130,9 @@ x = layers.Flatten()(x)
 
 # Create a fully connected layer with ReLU activation and 512 hidden units
 x = layers.Dropout(0.5)(x)
+x = layers.Dense(512, activation='relu')(x)
 x = layers.Dense(1024, activation='relu')(x)
-x = layers.Dense(1024, activation='relu')(x)
-x = layers.Dense(1024, activation='relu')(x)
+x = layers.Dense(128, activation='relu')(x)
 
 # Create output layer with a single node and sigmoid activation
 output = layers.Dense(1, activation='sigmoid')(x)
