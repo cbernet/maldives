@@ -1,5 +1,11 @@
 # Dogs vs Cats 
 
+## Introduction
+
+* Goal of the exercise
+* What will you learn 
+* Prerequisites
+
 ## Get the dataset 
 
 To download the input dataset,  we need to use the kaggle command, which is based on python 3. 
@@ -26,26 +32,29 @@ mkdir data
 cd data
 kaggle competitions download -c dogs-vs-cats
 unzip train.zip
+mv train all
 ```
 
 The input images are now available as: 
 
-* dogs: `data/train/dog.*.jpg`
-* cats: `data/train/cat.*.jpg`
+* dogs: `data/all/dog.*.jpg`
+* cats: `data/all/cat.*.jpg`
 
 Let's reorganize this files a bit, it will make our life easier later on: 
 
 ```
-cd train 
+cd all
 mkdir dogs 
 mv dog.* dogs/
 mkdir cats 
 mv cat.* cats/ 
 ```
 
-Now, you should have all dog pics in `data/train/dogs/`, and all cat pics in `data/train/cats/`.
+Now, you should have all dog pics in `data/all/dogs/`, and all cat pics in `data/all/cats/`.
 
 Please have a look at some of these images to make sure that everything is as you expect. Always good to use a good old natural brain before trying to set up an artifiicial one. 
+
+**explain splitting**
 
 Now that we have retrieved the dataset, we will use python 2 for the rest of the tutorial. Please deactivate your python 3 environment: 
 
@@ -171,6 +180,29 @@ Run it on your generator to display the next batch:
 ```python
 plot_gen(train_generator)
 ```
+
+## First try : a simple neural network
+
+## Convolutional neural network
+
+**network does not learn (starts too far from the minimum)**
+
+Solution: initialize conv 2d layers (kernel and bias) with RandomUniform. Also tried lecun_uniform and the default, glorot_uniform. 
+
+The last sigmoid layer is initialized with the default glorot_uniform. 
+
+I think that the batch size shouldn't be too large? 
+
+At the beginning, use a small number of images to work on this, overfitting is not a problem.
+
+**overfitting**
+
+Now using all pictures.
+
+epoch 500 steps of 20 pics, so 10k pictures. But I have 22k. 
+overfitting at epoch 30 already. 
+letting it run to epoch 200 to look at the profile
+
 
 
 
