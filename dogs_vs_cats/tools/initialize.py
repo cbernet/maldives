@@ -109,19 +109,19 @@ conv_ini = 'RandomUniform'
 
 # First convolution extracts 16 filters that are 3x3
 # Convolution is followed by max-pooling layer with a 2x2 window
-x = layers.Conv2D(16, 3, activation='relu',
+x = layers.Conv2D(16, 5, activation='relu',
                   kernel_initializer=conv_ini, bias_initializer=conv_ini)(img_input)
 x = layers.MaxPooling2D(2)(x)
 
 # Second convolution extracts 32 filters that are 3x3
 # Convolution is followed by max-pooling layer with a 2x2 window
-x = layers.Conv2D(32, 3, activation='relu',
+x = layers.Conv2D(32, 5, activation='relu',
                   kernel_initializer=conv_ini, bias_initializer=conv_ini)(x)
 x = layers.MaxPooling2D(2)(x)
 
 # Third convolution extracts 64 filters that are 3x3
 # Convolution is followed by max-pooling layer with a 2x2 window
-x = layers.Conv2D(64, 3, activation='relu',
+x = layers.Conv2D(64, 5, activation='relu',
                   kernel_initializer=conv_ini, bias_initializer=conv_ini)(x)
 x = layers.MaxPooling2D(2)(x)
 
@@ -150,7 +150,7 @@ model.compile(loss='binary_crossentropy',
 
 model.summary()
 
-if 1:
+if 0:
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=4000/train_batch_size,  
