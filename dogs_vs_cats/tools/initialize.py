@@ -49,9 +49,10 @@ def plot_history(history):
     plt.plot(epochs, val_loss)
     plt.title('Training and validation loss')
     plt.show()
-    
-train_dir = 'data/train'
-validation_dir = 'data/validation'
+
+data_dir = '/data2/cbernet/maldives/dogs_vs_cats/data'
+train_dir = data_dir+'/train'
+validation_dir = data_dir+'/validation'
 
 dogs = sorted(glob.glob(train_dir+'dogs/dog.*.jpg'))
 cats = sorted(glob.glob(train_dir+'cats/cat.*.jpg'))
@@ -61,12 +62,12 @@ cats_y = np.ones_like(cats,dtype='d')
 
 train_rescaler = ImageDataGenerator(
     rescale=1./255,
-#    rotation_range=40,
-#    width_shift_range=0.2,
-#    height_shift_range=0.2,
-#    shear_range=0.2,
-#    zoom_range=0.2,
-#    horizontal_flip=True,
+    rotation_range=20,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.1,
+    zoom_range=0.1,
+    horizontal_flip=True,
 )
 test_rescaler = ImageDataGenerator(rescale=1./255)
 
@@ -154,7 +155,7 @@ if 1:
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=4000/train_batch_size,  
-        epochs=50,
+        epochs=100,
         validation_data=validation_generator,
         validation_steps=1000/val_batch_size,  
         verbose=1)
