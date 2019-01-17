@@ -5,6 +5,9 @@ from plotting import plot_gen, plot_history, plot_pred
 from dataset import train_generator, validation_generator, val_batch_size, train_batch_size
 # from model import model, fit_model
 # print model.summary()
+from time import time
+from keras.callbacks import TensorBoard
+
 
 if __name__ == '__main__':
     import sys
@@ -31,21 +34,25 @@ if __name__ == '__main__':
     model = None
     fit_model = None
     model_path = args[0]
+    mode = None
     if model_path.endswith('.py'):
         print 'training', model_path
         with open(model_path) as ifile:
+            mode = 'fit'
             mod = imp.load_source('mod', model_path, ifile)
             model = mod.model
             fit_model = mod.fit_model
     elif model_path.endswith('h5'):
+        mode = 'load'
         print 'loading', model_path
         model = keras.models.load_model(model_path)
 
-    if not model:
-        sys.exit(1)
-
+    if mode == 'fit':
+        tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+        fit_model(model, train_generator, validation_generator, train_batch_size, val_batch_size, tensorboard)
+        
     model.summary()
 
-    b = next(validation_generator)
-    p = model.predict_on_batch(b[0])
-    plot_pred(b[0], b[1], p)
+    # b = next(validation_generator)
+    # p = model.predict_on_batch(b[0])
+    # plot_pred(b[0], b[1], p)
