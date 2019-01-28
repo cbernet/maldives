@@ -24,7 +24,7 @@ def print_highlight(line, words):
         # if word in words:
         printed = False
         for msword in words:
-            if msword in word:
+            if msword in word.lower():
                 cprint(word, 'blue', end=' ')
                 printed = True
                 break 
