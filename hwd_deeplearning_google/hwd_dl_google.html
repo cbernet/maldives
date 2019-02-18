@@ -3475,7 +3475,8 @@ XNMAAAAASUVORK5CYII=
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>In the model below, we add a second convolutional layer after the first one. Directly stacking it on top of the first one would not bring us anything, we could as well try and extract more than 10 features. Instead, we perform a max pooling in a window of 2x2 pixels and then apply the new convolutional layer on the output of the max pooling layer. In this way, the second convolutional layer will learn longer-distance features. We also increase the  number of features to be extracted from 10 to 20.</p>
+<p>In the model below, we add a second convolutional layer after the first one. 
+Before this second convolutional layer, we perform a max pooling in a window of 2x2 pixels and then apply the new convolutional layer on the output of the max pooling layer. In this way, the second convolutional layer will learn longer-distance features, and we reduce the number of parameters in the network for faster training and for less overfitting. We also increase the  number of features to be extracted from 10 to 20.</p>
 
 </div>
 </div>
@@ -5833,19 +5834,6 @@ aXRmAACA0+jMAAAAp9GZAQAATqMzAwAAnEZnBgAAOO3/APh9oKn7yeBeAAAAAElFTkSuQmCC
 
 </div>
 </div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span> 
-</pre></div>
-
-    </div>
-</div>
-</div>
-
 </div>
  
 
