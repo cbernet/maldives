@@ -1,0 +1,768 @@
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="About-this-tutorial">About this tutorial<a class="anchor-link" href="#About-this-tutorial">&#182;</a></h2><p>In my post about <a href="https://thedatafrog.com/handwritten-digit-recognition-scikit-learn/">handwritten digit recognition with scikit-learn</a>, we have seen that a simple neural network can easily be trained with <a href="https://scikit-learn.org">scikit-learn</a>. And we managed to classify images of digits with an accuracy larger than 90%.</p>
+<p>But scikit-learn is generally not adapted to neural networks.</p>
+<p>Its goal is in fact to provide a unified interface for training and testing different machine learning algorithms: neural networks, and also support-vector machines, naive Bayes, nearest neighbours, decision trees, etc.</p>
+<p>Indeed, in machine learning projects, you'll spend a large fraction of your time choosing the best algorithm and tuning it for best performance. Scikit-learn was designed to make these tasks as easy as possible.</p>
+<p>However, when it comes to neural networks specifically, scikit-learn has two major drawbacks:</p>
+<ul>
+<li>the interface does not provide enough control to build complex neural networks, nor to control their behaviour in details.</li>
+<li>it's not adapted to <a href="https://thedatafrog.com/install-tensorflow-windows/">deep learning</a></li>
+</ul>
+<p>In this post, we will repeat our exercise about handwritten digit recognition with <a href="https://keras.io/">Keras</a>, a high-level neural networks API. You will learn:</p>
+<ul>
+<li>How to install Keras </li>
+<li>How to create a simple dense neural network with this tool </li>
+<li>How to estimate its performance </li>
+</ul>
+<p>Later on, we will use Keras as an interface to TensorFlow to do deep learning.</p>
+<p><strong>Prerequisites:</strong> You should have some knowledge of:</p>
+<ul>
+<li>numpy, </li>
+<li>matplotlib, </li>
+<li>jupyter notebooks,</li>
+<li>basic neural networks. </li>
+</ul>
+<p>If that's not the case, <a href="https://thedatafrog.com/handwritten-digit-recognition-scikit-learn/">handwritten digit recognition with scikit-learn</a> is just for you!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Installation">Installation<a class="anchor-link" href="#Installation">&#182;</a></h2><p>First, install <a href="https://www.anaconda.com/download/">Anaconda</a> if not already done. Please be sure to <strong>pick the version for python 2.X and not for python 3.X</strong>.</p>
+<p>Launch the Anaconda Navigator application.</p>
+<p>Enter the Environments tab, and install the keras package in your base (root) environment.</p>
+<p>Solving the package specifications for keras may take a few minutes but you'll eventually get there.</p>
+<p>Then, head to the Home tab, and launch the jupyter notebook.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, get this notebook and open it in the jupyter notebook:</p>
+<ul>
+<li><a href="https://github.com/cbernet/maldives/archive/master.zip">download the repository containing this notebook</a></li>
+<li>unzip it, say to <code>Downloads/maldives-master</code></li>
+<li>in the jupyter notebook, navigate to <code>Downloads/maldives-master/handwritten_digits_keras</code></li>
+<li>open <code>handwritten_digits_keras.ipynb</code></li>
+</ul>
+<p>This page should appear in the notebook. From now on, follow the tutorial in the notebook.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Preparing-the-dataset">Preparing the dataset<a class="anchor-link" href="#Preparing-the-dataset">&#182;</a></h2><p>As in <a href="https://thedatafrog.com/handwritten-digit-recognition-scikit-learn/">handwritten digit recognition with scikit-learn</a>, we are going to use the digits dataset provided by scikit-learn. The digits are 8x8 images and we will feed them to a neural network with:</p>
+<ul>
+<li>an input layer with 8x8 = 64 neurons</li>
+<li>a hidden layer with 15 neurons</li>
+<li>an output layer with 10 neurons corresponding to the 10 digit categories. </li>
+</ul>
+<p>First, let's initialize our tools and load the digits dataset:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">os</span> 
+<span class="c1"># for some reason, the following is needed to run on mac os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KMP_DUPLICATE_LIB_OK&#39;</span><span class="p">]</span><span class="o">=</span><span class="s1">&#39;True&#39;</span>  
+
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="n">digits</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">load_digits</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The input layer requires a 1-dimensional array in input, but our images are 2D. So we need to flatten all images:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[2]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(1797, 64)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The labels require a bit of attention. At the moment, <code>digits.target</code> contains the digit corresponding to each image in the dataset:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">digits</span><span class="o">.</span><span class="n">target</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([0, 1, 2, ..., 8, 9, 8])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>But in Keras, we have to build our neural network with 10 output neurons (this actually happens under the hood in scikit-learn). During the training, Keras will have to compare the 10 output values of these neurons to the target value. But how can we compare a vector of 10 values with a single target value?</p>
+<p>The solution is to translate each target value into a vector of length 10 with a technique called <em>one-hot encoding</em>:</p>
+<ul>
+<li>target <code>0</code> is translated to <code>[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]</code></li>
+<li>target <code>1</code> is translated to <code>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]</code></li>
+<li>...</li>
+<li>target <code>9</code> is translated to <code>[0, 0, 0, 0, 0, 0, 0, 0, 0, 1]</code></li>
+</ul>
+<p>After doing that, the values from the output neurons, which are probabilities ranging from 0 to 1, can be compared directly to the values in the target vector. In this way, for a given number, say 0, the neural network will be trained to output a high probability from the first output neuron, and a low probability from the following neurons.</p>
+<p>One-hot encoding can be performed easily with the utilities provided by Keras:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">np_utils</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np_utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">target</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">digits</span><span class="o">.</span><span class="n">target</span>
+<span class="k">print</span> <span class="n">y</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Using TensorFlow backend.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0 1 2 ... 8 9 8]
+[[1. 0. 0. ... 0. 0. 0.]
+ [0. 1. 0. ... 0. 0. 0.]
+ [0. 0. 1. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 0. 1. 0.]
+ [0. 0. 0. ... 0. 0. 1.]
+ [0. 0. 0. ... 0. 1. 0.]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>let's now split our data into a training sample and a testing sample:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">split_limit</span><span class="o">=</span><span class="mi">1000</span>
+<span class="n">x_train</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="n">split_limit</span><span class="p">]</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:</span><span class="n">split_limit</span><span class="p">]</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">split_limit</span><span class="p">:]</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">split_limit</span><span class="p">:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The first 1000 images and labels are going to be used for training. The rest of the dataset will be used later to test the performance of our network.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Creation-of-the-neural-network-with-Keras">Creation of the neural network with Keras<a class="anchor-link" href="#Creation-of-the-neural-network-with-Keras">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After importing the necessary tools from Keras, we create the neural network in the following code snippet.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">keras</span> <span class="kn">import</span> <span class="n">layers</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">regularizers</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># create the input layer</span>
+<span class="c1"># </span>
+<span class="c1"># we specify that the input layer </span>
+<span class="c1"># should have 64 neurons, one for each pixel</span>
+<span class="c1"># in our images. </span>
+<span class="c1"># The input neurons do nothing, they </span>
+<span class="c1"># just transfer the value at each pixel </span>
+<span class="c1"># to the next layer. </span>
+<span class="n">img_input</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,))</span>
+
+<span class="c1"># create the hidden layer</span>
+<span class="c1">#</span>
+<span class="c1"># This layer is a Dense layer, which means</span>
+<span class="c1"># that its neurons are fully connected to the </span>
+<span class="c1"># neurons in the previous layer (the input layer)</span>
+<span class="c1"># We will talk about the activation in a future post</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> 
+                   <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)(</span><span class="n">img_input</span><span class="p">)</span>
+
+<span class="c1"># create the output layer</span>
+<span class="c1"># </span>
+<span class="c1"># The output layer is another Dense layer.</span>
+<span class="c1"># It must have 10 neurons, corresponding to </span>
+<span class="c1"># the 10 digit categories </span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> 
+                      <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;softmax&#39;</span><span class="p">)(</span><span class="n">tmp</span><span class="p">)</span>
+
+<span class="c1"># create the neural network from the layers</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">img_input</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+
+<span class="c1"># print a summary of the model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+
+<span class="c1"># =================================================</span>
+<span class="c1"># Please don&#39;t pay attention to what follows, </span>
+<span class="c1"># we&#39;ll talk about regularization later!</span>
+<span class="c1"># For now, it is enough to know that regularization</span>
+<span class="c1"># helps the neural network converge properly. </span>
+<span class="c1"># I&#39;ve added this regularization because it is </span>
+<span class="c1"># performed by default in scikit-learn, </span>
+<span class="c1"># and because we want to be able to compare the </span>
+<span class="c1"># results of scikit-learn and keras. </span>
+<span class="n">l2_rate</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;kernel_regularizer&#39;</span><span class="p">):</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">kernel_regularizer</span> <span class="o">=</span> <span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="n">l2_rate</span><span class="p">)</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">bias_regularizer</span> <span class="o">=</span> <span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="n">l2_rate</span><span class="p">)</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">activity_regularizer</span> <span class="o">=</span> <span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="n">l2_rate</span><span class="p">)</span>
+<span class="c1"># =================================================</span>
+
+<span class="c1"># define how the neural network will learn, </span>
+<span class="c1"># and compile the model. </span>
+<span class="c1"># models must be compiled before </span>
+<span class="c1"># they can be trained and used. </span>
+<span class="c1"># the loss, optimizer, and metrics arguments </span>
+<span class="c1"># will be covered in a future post. </span>
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;categorical_crossentropy&#39;</span><span class="p">,</span>
+              <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizers</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+              <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_2 (InputLayer)         (None, 64)                0         
+_________________________________________________________________
+dense_3 (Dense)              (None, 15)                975       
+_________________________________________________________________
+dense_4 (Dense)              (None, 10)                160       
+=================================================================
+Total params: 1,135
+Trainable params: 1,135
+Non-trainable params: 0
+_________________________________________________________________
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, we can train the network:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">),</span>
+                    <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Train on 1000 samples, validate on 797 samples
+Epoch 1/50
+1000/1000 [==============================] - 0s 430us/step - loss: 2.2570 - acc: 0.2060 - val_loss: 1.9799 - val_acc: 0.4391
+Epoch 2/50
+1000/1000 [==============================] - 0s 27us/step - loss: 1.7615 - acc: 0.5700 - val_loss: 1.5124 - val_acc: 0.6173
+Epoch 3/50
+1000/1000 [==============================] - 0s 57us/step - loss: 1.2999 - acc: 0.7120 - val_loss: 1.2052 - val_acc: 0.7327
+Epoch 4/50
+1000/1000 [==============================] - 0s 53us/step - loss: 0.9755 - acc: 0.8360 - val_loss: 0.9633 - val_acc: 0.7917
+Epoch 5/50
+1000/1000 [==============================] - 0s 47us/step - loss: 0.7352 - acc: 0.8570 - val_loss: 0.8170 - val_acc: 0.8105
+Epoch 6/50
+1000/1000 [==============================] - 0s 48us/step - loss: 0.5977 - acc: 0.8900 - val_loss: 0.6957 - val_acc: 0.8306
+Epoch 7/50
+1000/1000 [==============================] - 0s 50us/step - loss: 0.4799 - acc: 0.9130 - val_loss: 0.5716 - val_acc: 0.8770
+Epoch 8/50
+1000/1000 [==============================] - 0s 33us/step - loss: 0.4047 - acc: 0.9270 - val_loss: 0.5378 - val_acc: 0.8720
+Epoch 9/50
+1000/1000 [==============================] - 0s 55us/step - loss: 0.3405 - acc: 0.9460 - val_loss: 0.5185 - val_acc: 0.8808
+Epoch 10/50
+1000/1000 [==============================] - 0s 56us/step - loss: 0.2989 - acc: 0.9480 - val_loss: 0.5236 - val_acc: 0.8657
+Epoch 11/50
+1000/1000 [==============================] - 0s 48us/step - loss: 0.2653 - acc: 0.9590 - val_loss: 0.4815 - val_acc: 0.8908
+Epoch 12/50
+1000/1000 [==============================] - 0s 30us/step - loss: 0.2489 - acc: 0.9490 - val_loss: 0.4888 - val_acc: 0.8795
+Epoch 13/50
+1000/1000 [==============================] - 0s 58us/step - loss: 0.2339 - acc: 0.9600 - val_loss: 0.4344 - val_acc: 0.8971
+Epoch 14/50
+1000/1000 [==============================] - 0s 59us/step - loss: 0.2089 - acc: 0.9620 - val_loss: 0.4893 - val_acc: 0.8632
+Epoch 15/50
+1000/1000 [==============================] - 0s 48us/step - loss: 0.2012 - acc: 0.9580 - val_loss: 0.4107 - val_acc: 0.8934
+Epoch 16/50
+1000/1000 [==============================] - 0s 29us/step - loss: 0.1801 - acc: 0.9640 - val_loss: 0.4007 - val_acc: 0.8921
+Epoch 17/50
+1000/1000 [==============================] - 0s 60us/step - loss: 0.1633 - acc: 0.9720 - val_loss: 0.3830 - val_acc: 0.9021
+Epoch 18/50
+1000/1000 [==============================] - 0s 52us/step - loss: 0.1475 - acc: 0.9710 - val_loss: 0.4084 - val_acc: 0.8946
+Epoch 19/50
+1000/1000 [==============================] - 0s 50us/step - loss: 0.1449 - acc: 0.9720 - val_loss: 0.4290 - val_acc: 0.8770
+Epoch 20/50
+1000/1000 [==============================] - 0s 57us/step - loss: 0.1393 - acc: 0.9720 - val_loss: 0.4002 - val_acc: 0.8959
+Epoch 21/50
+1000/1000 [==============================] - 0s 45us/step - loss: 0.1190 - acc: 0.9790 - val_loss: 0.3784 - val_acc: 0.8934
+Epoch 22/50
+1000/1000 [==============================] - 0s 50us/step - loss: 0.1172 - acc: 0.9770 - val_loss: 0.3580 - val_acc: 0.8971
+Epoch 23/50
+1000/1000 [==============================] - 0s 50us/step - loss: 0.1304 - acc: 0.9740 - val_loss: 0.3794 - val_acc: 0.8971
+Epoch 24/50
+1000/1000 [==============================] - 0s 48us/step - loss: 0.1127 - acc: 0.9810 - val_loss: 0.3616 - val_acc: 0.8996
+Epoch 25/50
+1000/1000 [==============================] - 0s 54us/step - loss: 0.0884 - acc: 0.9890 - val_loss: 0.3453 - val_acc: 0.9072
+Epoch 26/50
+1000/1000 [==============================] - 0s 48us/step - loss: 0.0823 - acc: 0.9880 - val_loss: 0.3525 - val_acc: 0.9021
+Epoch 27/50
+1000/1000 [==============================] - 0s 29us/step - loss: 0.0911 - acc: 0.9830 - val_loss: 0.3605 - val_acc: 0.9034
+Epoch 28/50
+1000/1000 [==============================] - 0s 58us/step - loss: 0.1099 - acc: 0.9790 - val_loss: 0.4343 - val_acc: 0.8770
+Epoch 29/50
+1000/1000 [==============================] - 0s 49us/step - loss: 0.1251 - acc: 0.9720 - val_loss: 0.3649 - val_acc: 0.9009
+Epoch 30/50
+1000/1000 [==============================] - 0s 47us/step - loss: 0.1068 - acc: 0.9740 - val_loss: 0.3727 - val_acc: 0.8946
+Epoch 31/50
+1000/1000 [==============================] - 0s 43us/step - loss: 0.0902 - acc: 0.9830 - val_loss: 0.3856 - val_acc: 0.8795
+Epoch 32/50
+1000/1000 [==============================] - 0s 47us/step - loss: 0.1281 - acc: 0.9630 - val_loss: 0.3476 - val_acc: 0.9072
+Epoch 33/50
+1000/1000 [==============================] - 0s 33us/step - loss: 0.0833 - acc: 0.9880 - val_loss: 0.3495 - val_acc: 0.9109
+Epoch 34/50
+1000/1000 [==============================] - 0s 48us/step - loss: 0.0858 - acc: 0.9880 - val_loss: 0.3507 - val_acc: 0.9084
+Epoch 35/50
+1000/1000 [==============================] - 0s 63us/step - loss: 0.0862 - acc: 0.9890 - val_loss: 0.3509 - val_acc: 0.9021
+Epoch 36/50
+1000/1000 [==============================] - 0s 87us/step - loss: 0.0698 - acc: 0.9890 - val_loss: 0.3407 - val_acc: 0.9059
+Epoch 37/50
+1000/1000 [==============================] - 0s 54us/step - loss: 0.0628 - acc: 0.9910 - val_loss: 0.3355 - val_acc: 0.9059
+Epoch 38/50
+1000/1000 [==============================] - 0s 51us/step - loss: 0.0602 - acc: 0.9890 - val_loss: 0.3490 - val_acc: 0.9046
+Epoch 39/50
+1000/1000 [==============================] - 0s 49us/step - loss: 0.0612 - acc: 0.9940 - val_loss: 0.3303 - val_acc: 0.9134
+Epoch 40/50
+1000/1000 [==============================] - 0s 39us/step - loss: 0.0664 - acc: 0.9880 - val_loss: 0.3398 - val_acc: 0.9084
+Epoch 41/50
+1000/1000 [==============================] - 0s 36us/step - loss: 0.0663 - acc: 0.9890 - val_loss: 0.3624 - val_acc: 0.9021
+Epoch 42/50
+1000/1000 [==============================] - 0s 25us/step - loss: 0.0634 - acc: 0.9840 - val_loss: 0.3461 - val_acc: 0.9147
+Epoch 43/50
+1000/1000 [==============================] - 0s 35us/step - loss: 0.0532 - acc: 0.9920 - val_loss: 0.3476 - val_acc: 0.9134
+Epoch 44/50
+1000/1000 [==============================] - 0s 27us/step - loss: 0.0482 - acc: 0.9950 - val_loss: 0.3428 - val_acc: 0.9159
+Epoch 45/50
+1000/1000 [==============================] - 0s 31us/step - loss: 0.0445 - acc: 0.9950 - val_loss: 0.3268 - val_acc: 0.9147
+Epoch 46/50
+1000/1000 [==============================] - 0s 36us/step - loss: 0.0435 - acc: 0.9970 - val_loss: 0.3308 - val_acc: 0.9059
+Epoch 47/50
+1000/1000 [==============================] - 0s 36us/step - loss: 0.0405 - acc: 0.9970 - val_loss: 0.3252 - val_acc: 0.9172
+Epoch 48/50
+1000/1000 [==============================] - 0s 27us/step - loss: 0.0426 - acc: 0.9950 - val_loss: 0.3404 - val_acc: 0.9122
+Epoch 49/50
+1000/1000 [==============================] - 0s 32us/step - loss: 0.0430 - acc: 0.9940 - val_loss: 0.3306 - val_acc: 0.9122
+Epoch 50/50
+1000/1000 [==============================] - 0s 30us/step - loss: 0.0421 - acc: 0.9960 - val_loss: 0.3342 - val_acc: 0.9109
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Evaluating-the-performance">Evaluating the performance<a class="anchor-link" href="#Evaluating-the-performance">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The predictions from the neural network are evaluated for all examples in the test sample by doing</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[7.22454715e-05 1.40154385e-04 1.14361326e-04 1.87753886e-03
+ 5.77343690e-06 9.97086465e-01 3.70808011e-05 4.92060144e-06
+ 3.18983046e-04 3.42447049e-04]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For each sample, the prediction is an array of 10 values. Each value is the estimated probability for the image to belong to this category.</p>
+<p>The predicted category is the one with the largest probability.</p>
+<p>Let's write a small function to plot a given image, and to print the true and predicted categories:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">plot_prediction</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s1">&#39;predicted probabilities:&#39;</span>
+    <span class="k">print</span> <span class="n">predictions</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s1">&#39;predicted category&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="k">print</span> <span class="s1">&#39;true probabilities:&#39;</span>
+    <span class="k">print</span> <span class="n">y_test</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s1">&#39;true category&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_test</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">x_test</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In this function, we obtain the category with <code>np.argmax</code> that, for an array, returns the index corresponding to the largest value.</p>
+<p>Let's use this function to have a look at a few examples (just choose a different index to look at another example).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">plot_prediction</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>predicted probabilities:
+[7.22454715e-05 1.40154385e-04 1.14361326e-04 1.87753886e-03
+ 5.77343690e-06 9.97086465e-01 3.70808011e-05 4.92060144e-06
+ 3.18983046e-04 3.42447049e-04]
+predicted category 5
+true probabilities:
+[0. 0. 0. 0. 0. 1. 0. 0. 0. 0.]
+true category 5
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, let's compute the accuracy score, which is the probability to classify the digits correctly.</p>
+<p>We will compute the accuracy for the test sample, which has not been used to train the network. Again, we will use <code>np.argmax</code> to get the predicted and true categories for each example.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># the second argument of argmax specifies</span>
+<span class="c1"># that we want to get argmax for each example. </span>
+<span class="c1"># without this argument, argmax would return </span>
+<span class="c1"># the largest value in the whole array,</span>
+<span class="c1"># considering all examples</span>
+<span class="n">y_test_best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">y_test_best</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">predictions_best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+<span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test_best</span><span class="p">,</span> <span class="n">predictions_best</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(797,)
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.9109159347553325</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You should obtain an accuracy around 91%, similar to the one we had obtained in the same conditions with scikit-learn.</p>
+<p>Please note that the result is not deterministic, so the accuracy will vary every time you train the network. I usually get an accuracy between 90 and 93%, but I sometimes get a value as low as 87%.</p>
+<p>Please repeat the exercise starting from the creation of the neural network to see what happens.</p>
+<h2 id="What-next?">What next?<a class="anchor-link" href="#What-next?">&#182;</a></h2><p>In this post, you have trained your first neural network with keras.</p>
+<p>Keras is the easiest and most powerful way to work with neural networks, and we will use it very often on this blog.</p>
+<p>Very soon, we'll start to do deep learning on a GPU with keras and TensorFlow.</p>
+<p>More information: <a href="https://keras.io/getting-started/sequential-model-guide/">Guide to the sequential model of keras</a></p>
+
+</div>
+</div>
+</div>
+ 
+

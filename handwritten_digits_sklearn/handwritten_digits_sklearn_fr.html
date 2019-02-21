@@ -1,0 +1,1095 @@
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="&#192;-propos-de-ce-tutoriel">&#192; propos de ce tutoriel<a class="anchor-link" href="#&#192;-propos-de-ce-tutoriel">&#182;</a></h2><p>Ce tuto est une introduction pratique au machine learning, accessible à tous, ou presque.</p>
+<p>Se mettre au machine learning peut être compliqué lorsque l'on cherche les infos un peu au hasard sur le web...</p>
+<p>Ici, mon but est de vous aider à démarrer avec un exemple concret de reconnaissance d'image, avec juste un petit peu de code, et pas de maths.</p>
+<p>Après une courte introduction au machine learning, vous apprendrez:</p>
+<ul>
+<li>les principes de l'apprentissage supervisé pour la classification,</li>
+<li>comment installer la suite scientifique de python rapidement et sans effort,</li>
+<li>comment accéder à vos données d'entraînement et les valider,</li>
+<li>comment créer et entraîner votre premier réseau de neurones sur ces données,</li>
+<li>comment utiliser le réseau entraîné et tester ses performances.</li>
+</ul>
+<h4 id="Pr&#233;requis">Pr&#233;requis<a class="anchor-link" href="#Pr&#233;requis">&#182;</a></h4><p>Nous allons travailler en python, un excellent choix pour l'analyse de données. Si vous ne connaissez pas python mais que avez fait un peu de C, de C++, ou de java par exemple, tout ira bien! C'est l'occasion idéale de découvrir python et, pourquoi pas, de tomber vous aussi amoureux de ce langage!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Qu'est-ce-que-le-machine-learning?">Qu'est-ce que le machine learning?<a class="anchor-link" href="#Qu'est-ce-que-le-machine-learning?">&#182;</a></h2><p>Le machine learning (apprentissage machine) est un domaine de l'intelligence artificielle dans lequel on crée un système capable d'apprendre de manière autonome à partir d'un échantillon de données d'entraînement. Une fois l'entraînement réalisé, le système est utilisé pour effectuer des prédictions concernant de nouvelles données, jamais observées auparavant.</p>
+<p>Cette approche permet de résoudre des problèmes complexes, difficiles voire impossibles à traiter par une approche traditionnelle de la programmation.</p>
+<p>Il existe de nombreuses applications du machine learning, comme par exemple:</p>
+<ul>
+<li>les véhicules autonomes: <a href="https://www.youtube.com/watch?v=TsaES--OTzM">Celle de google doit encore apprendre à rouler à droite sur l'autoroute</a> ;-) </li>
+<li>le pilotage de drones: le pilote donne seulement des instructions simples (haut, bas, gauche, droit, ou juste des coordonnées 3D), et le drone réalise automatiquement les ajustements complexes nécessaires à sa stabilité, ou pour <a href="https://www.youtube.com/watch?v=VnTQTm7vNbY">voler en formation</a></li>
+<li>les <a href="https://www.youtube.com/watch?v=LikxFZZO2sk">robots</a> </li>
+<li>la prédiction du prix d'un bien immobilier en fonction de variables comme la localisation du bien, le nombre de pièces, et même le texte de l'annonce immobilière.</li>
+<li>les publicités google qui prédisent vos chances de cliquer sur une publicité, afin de vous envoyer les plus pertinentes. </li>
+<li>les systèmes de recommandation collaboratifs: vidéos youtube ou produits amazon que vous êtes susceptible d'aimer</li>
+<li>l'identification des pièces présentant un défaut sur la chaîne de production</li>
+<li>l'identification de groupes de personnes de même opinion sur les réseaux sociaux, et des influenceurs les plus importants au sein de ces groupes.</li>
+<li>la catégorisation des photos (vous pouvez essayer de taper chat ou nourriture dans la boîte de recherche de votre bibliothèque google photos si vous en avez une)</li>
+<li>la traduction automatique (<a href="https://translate.google.fr/?hl=en">google translate</a> )</li>
+<li>le filtrage des pourriels</li>
+<li>la création automatique d'images: <a href="https://deepdreamgenerator.com/#gallery">deep dream</a>, <a href="https://github.com/alexjc/neural-doodle">neural doodle</a></li>
+<li>...  </li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Machine-learning-pour-la-classification">Machine learning pour la classification<a class="anchor-link" href="#Machine-learning-pour-la-classification">&#182;</a></h2><p>Le but de ce tuto est de mettre directement et facilement la main à la pâte. Je ne vais donc pas vous ennuyer avec des concepts mathématiques compliqués, et me contenter de vous donner une explication simple des grands principes de l'apprentissage supervisé pour la classification.</p>
+<p>Il y aura un post plus détaillé par la suite au sujet du processus d'apprentissage.</p>
+<p><img src="https://github.com/cbernet/maldives/raw/master/handwritten_digits_sklearn/supervised_learning.png" alt="Supervised learning"></p>
+<p>On donne au réseau une succession d'exemples d'entraînement. Chaque exemple comprend:</p>
+<ul>
+<li>l'image d'un chiffre</li>
+<li>une étiquette, qui nous dit quel est le chiffre réellement représenté par l'image. L'étiquette pourrait avoir été renseignée par la personne qui a écrit ce chiffre. </li>
+</ul>
+<p>Dans le schéma ci-dessus, la première image est traitée par le réseau de neurone, qui nous dit que l'image est un 9.</p>
+<p>Au début du processus d'apprentissage, les connexions entre les neurones dans le réseau sont aléatoires, et le réseau n'est pas encore capable de se rendre utile en quoi que ce soit; il se contente de nous donner une réponse aléatoire.</p>
+<p>La réponse est comparée à l'étiquette. Dans ce cas, la réponse (9) est différente de l'étiquette (en fait, ce chiffre est un 3), et un retour est donné au réseau de neurones pour qu'il puisse s'améliorer. Les connexions entre les neurones sont modifiées, en favorisant celles qui tendent à donner une réponse correcte.</p>
+<p>Après la modification, les exemples suivants sont considérés, et le réseau apprend selon un processus itératif.</p>
+<p>Le nombre d'exemples nécessaires pour entraîner le réseau correctement peut être de l'ordre de quelques centaines pour des réseaux avec une architecture simple, ou de millions pour les réseaux complexes.</p>
+<h2 id="Installation-de-python-et-de-sa-librairie-scientifique">Installation de python et de sa librairie scientifique<a class="anchor-link" href="#Installation-de-python-et-de-sa-librairie-scientifique">&#182;</a></h2><p><strong>Si vous êtes déjà en train de faire tourner ce tuto dans un notebook jupyter, vous pouvez passer directement à la section suivante.</strong></p>
+<p>Nous allons utiliser un ensemble d'outils venant de <a href="https://www.scipy.org/">scipy</a>, la librairie scientifique de python:</p>
+<ul>
+<li><a href="https://scikit-learn.org/">scikit-learn</a>: l'une des boîtes à outils les plus utilisées pour le machine learning en python. Il nous donnera un accès facile à l'échantillon de chiffres manuscrits, et nous permettra de définir et d'entraîner notre réseau en quelques lignes de code</li>
+<li><a href="http://www.numpy.org/">numpy</a>: module central pour la manipulation de tableaux de données, tels que nos images de chiffres</li>
+<li><a href="https://matplotlib.org/">matplotlib</a>: outils de visualisation, indispensables pour vérifier que tout va bien à toutes les étapes</li>
+<li><a href="https://jupyter.org/">jupyter</a>: serveur web qui vous permettra de suivre ce tuto et de faire tourner le code directement dans votre navigateur. </li>
+</ul>
+<p>Scipy est en fait plus qu'une simple librairie, mais un écosystème de modules python interdépendants.</p>
+<p>Il y a six ans, quand je démarrais avec scipy, j'ai essayé d'installer manuellement tous les modules dont j'avais besoin, pour la version de python qui était déjà en place sur mon système.</p>
+<p>Je passai presque une journée à me battre avec les dépendances entre les différents modules. Par exemple, scikit-learn avait besoin de numpy version A, mais pandas, lui, de la version B. Ou alors, l'un de ces modules ne pouvait fonctionner qu'avec une version de python plus récente que celle dont je disposais, ce qui voulait dire que j'allais devoir installer une nouvelle version de python sur mon système, puis gérer par la suite les deux version de python en parallèle.</p>
+<p>C'est là que j'ai découvert <a href="https://anaconda.org/">Anaconda</a>.</p>
+<p>Comme le dit le site web d'Anaconda:</p>
+<p><em>Avec plus de 6 millions d'utilisateurs, la distribution open source Anaconda est le moyen le plus rapide et le plus facile de faire de la data science et du machine learning sous Linux, Windows, et Mac OS X. C'est le standard industriel pour le développement, le test, et l'entraînement sur une seule machine.</em></p>
+<p>En résumé, l'équipe d'Anaconda maintient un dépôt contenant plus de 1400 modules de data science, tous compatibles, et fournit des outils permettant d'installer une version de python ainsi que ces modules simplement, et en moins de cinq minutes.</p>
+<p>Et c'est ce que nous allons faire maintenant!</p>
+<p>Tout d'abord, <a href="https://www.anaconda.com/download/">téléchargez Anaconda</a> pour votre système:</p>
+<ul>
+<li>Choisissez la version python 2.X, pas 3.X.</li>
+<li>Si vous utilisez Windows ou Linux, prenez garde à choisir l'outil d'installation 64 bits si vous avez un système 64 bits. </li>
+</ul>
+<p>Lancez l'outil d'installation et installez Anaconda.</p>
+<p>Finalement, lancez l'application Anaconda Navigator. Sous Windows, vous pouvez la trouver en cliquant sur le menu démarrer, et en tapant anaconda.</p>
+<p>Dans la fenêtre de l'Anaconda Navigator, cliquez sur l'onglet Home, et démarrez le jupyter notebook.</p>
+<p>Vous devriez être redirigé vers une page du jupyter notebook dans votre navigateur. Nous allons maintenant tester cet outil.</p>
+<p>Créez un nouveau notebook. Dans le notebook, vous devriez voir une cellule vide, dans laquelle vous pouvez écrire du code python. Copiez-collez le code suivant dans cette cellule, et exécutez-la en pressant MAJ+entrée.</p>
+<div class="highlight"><pre><span></span><span class="k">print</span> <span class="s1">&#39;hello world!&#39;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">i</span>
+</pre></div>
+<p>Une nouvelle cellule apparaît. Importez numpy et matplotlib (pensez bien à exécuter la cellule après avoir écrit le code):</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span> 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+</pre></div>
+<p>Ceci est la méthode standard pour importer ces modules:</p>
+<ul>
+<li>le module pyplot de matplotlib est maintenant appelé plt</li>
+<li>le module numpy est appelé np.</li>
+</ul>
+<p>Vous auriez très bien pu choisir d'autres noms, mais comme ceux-là sont utilisés par quasiment tout le monde, il sera plus simple de les utiliser aussi.</p>
+<p>Maintenant, essayons de faire notre premier graphique, histoire de vérifier que numpy et matplotlib fonctionnent:</p>
+<div class="highlight"><pre><span></span><span class="c1"># création d&#39;un tableau numpy à 1 dimension avec 16 valeurs entre 0 et 3</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">x</span> 
+<span class="c1"># création d&#39;un nouveau tableau à partir de x.</span>
+<span class="c1"># x**2 retourne un tableau dans lequel chacun des éléments de x</span>
+<span class="c1"># a été mis au carré.</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+<span class="k">print</span> <span class="n">y</span>
+<span class="c1"># tracé de y en fonction de x. </span>
+<span class="c1"># vous devriez obtenir une parabole. </span>
+<span class="c1"># vérifiez que pour x=1, on a bien y=1, et que pour x = 2, y = 4 </span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+<hr>
+<p>💡 <strong>Petit avertissement:</strong></p>
+<p>C'est assez facile de ce perdre dans la documentation de tous ces outils, et d'y perdre beaucoup de temps.</p>
+<p>Par exemple, si vous lisez la documentation de la méthode plt.plot (je ne vous donnerai pas le lien, mais vous pourriez le retrouver sur google ;-) ), vous verrez qu'il y a de nombreuses façons de l'appeler, avec de nombreux paramètres optionnels. Mais après tout, nous avons seulement besoin de savoir que <code>plt.plot(x,y)</code> trace y en fonction de x.</p>
+<p>Pour ne pas trop galérer, je vous conseille de suivre ce tutoriel jusqu'au bout sans creuser plus loin.</p>
+<p>Ainsi, vous parviendrez à entraîner votre premier réseau de neurones facilement et ce faisant, vous vous familiariserez avec les outils les plus importants de scikit-learn, numpy, et matplotlib. Ce sera bien suffisant pour bon nombre de projets de machine learning, et vous pourrez toujours en apprendre plus par la suite quand cela deviendra nécessaire (vous le saurez!)</p>
+<p>Pour aller plus loin, un excellent <a href="https://scipy-lectures.org/">cours sur scipy</a> en anglais.</p>
+<hr>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Maintenant que vous avez accès au notebook jupyter, j'ai une bonne nouvelle pour vous. Vous n'aurez pas à continuer à copier-coller le code de cette page dans votre notebook.</p>
+<p>Faîtes plutôt la chose suivante:</p>
+<ul>
+<li><a href="https://github.com/cbernet/maldives/archive/master.zip">téléchargez le dépôt contenant ce notebook</a></li>
+<li>décompressez-le, par exemple vers <code>Downloads/maldives-master</code>.</li>
+<li>lancez un jupyter notebook depuis l'Anaconda Navigator</li>
+<li>dans le notebook, naviguez vers <code>Downloads/maldives-master/handwritten_digits_sklearn</code></li>
+<li>et ouvrez <code>handwritten_digits_sklearn_fr.ipynb</code></li>
+</ul>
+<p>Vous devriez voir cette page apparaître dans le notebook. À partir de maintenant, continuez le tutoriel dans le notebook. Vous devrez exécuter les cellules dans l'ordre. Vous pourrez même ajouter des cellules et modifier les cellules existantes pour expérimenter.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="L'&#233;chantillon-de-chiffres">L'&#233;chantillon de chiffres<a class="anchor-link" href="#L'&#233;chantillon-de-chiffres">&#182;</a></h2><p>scikit-learn fournit plusieurs échantillons test. Chargeons l'échantillon de chiffres manuscrits:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="n">digits</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">load_digits</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>En python, la fonction <code>dir</code> retourne les noms des attributs d'un objet. En d'autres termes, cette fonction nous dit quelle information est stockée dans l'objet sous forme d'autres objets. Utilisons cette fonction pour regarder ce que contient notre échantillon <code>digits</code>:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="nb">dir</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;DESCR&#39;, &#39;data&#39;, &#39;images&#39;, &#39;target&#39;, &#39;target_names&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Voyons quel est le type des objets <code>digits.images</code> et <code>digits.target</code> :</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+<span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;type &#39;numpy.ndarray&#39;&gt;
+&lt;type &#39;numpy.ndarray&#39;&gt;
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>images</code> et <code>target</code> sont tous deux des <code>ndarrays</code> (tableaux à N dimensions), un type défini dans le module <code>numpy</code>.
+L'attribut <code>shape</code> d'un <code>ndarray</code> donne le nombre de dimensions et la taille du tableau suivant chacune des dimensions. Par exemple:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(1797, 8, 8)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>digits.image</code> est un tableau à 3 dimensions. La première indexe les images, et il y en a 1797. Les deux dimensions suivantes correspondent aux coordonnées x et y des pixels de chaque image. Chaque image a donc 8x8 = 64 pixels. On peut visualiser <code>digits.images</code> en 3D comme une pile d'images de 8x8 pixels chacune.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Imprimons les données de la première image 8x8. Chaque case dans le tableau correspond à un pixel, et la valeur dans cette case est la quantité de noir dans le pixel.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[ 0.  0.  5. 13.  9.  1.  0.  0.]
+ [ 0.  0. 13. 15. 10. 15.  5.  0.]
+ [ 0.  3. 15.  2.  0. 11.  8.  0.]
+ [ 0.  4. 12.  0.  0.  8.  8.  0.]
+ [ 0.  5.  8.  0.  0.  9.  8.  0.]
+ [ 0.  4. 11.  0.  1. 12.  7.  0.]
+ [ 0.  2. 14.  5. 10. 12.  0.  0.]
+ [ 0.  0.  6. 13. 10.  0.  0.  0.]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Affichons l'image graphiquement (parfois, l'image n'apparaît pas. Si c'est le cas, il suffit de ré-exécuter la cellule ci-dessous avec MAJ+entrée):</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;matplotlib.image.AxesImage at 0x1a13c6b6d0&gt;</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>La résolution de l'image est mauvaise. Originellement, l'échantillon de chiffres manuscrits contient des images de bien meilleure résolution. Mais la résolution a été réduite pour créer les échantillons test de scikit-learn pour accélérer et simplifier l'entraînement d'algorithmes de machine learning pour classifier ces chiffres.</p>
+<p>Maintenant, regardons l'attribut <code>digits.target</code> :</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="n">digits</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span>
+<span class="k">print</span> <span class="n">digits</span><span class="o">.</span><span class="n">target</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(1797,)
+[0 1 2 ... 8 9 8]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>C'est un tableau à une dimension, avec 1797 cases. Il contient les étiquettes, c'est à dire les chiffres auxquels correspondent chaque image. Par exemple, la première étiquette est 0, et correspond à l'image ci-dessus.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nous allons maintenant créer une petite fonction qui nous permettra d'afficher plusieurs images d'un coup, ainsi que les étiquettes correspondantes:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">plot_multi</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Plots 16 digits, starting with digit i&#39;&#39;&#39;</span>
+    <span class="n">nplots</span> <span class="o">=</span> <span class="mi">16</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">15</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nplots</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">],</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">target</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">plot_multi</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Vous pouvez afficher les images suivantes en appelant <code>plot_multi(16)</code>, <code>plot_multi(32)</code>, etc.</p>
+<p>Vous verrez probablement qu'avec une si mauvaise résolution, ce n'est pas si facile de reconnaître certains de ces chiffres, même pour notre cerveau humain hautement performant. Dans ces conditions, le réseau de neurones sera lui aussi limité par la faible qualité des images. Pouvons-nous créer un réseau de neurones au moins aussi performant qu'un humain? Ce serait déjà bien!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Cr&#233;ation-du-r&#233;seau-et-pr&#233;paration-de-l'&#233;chantillon-d'entra&#238;nement">Cr&#233;ation du r&#233;seau et pr&#233;paration de l'&#233;chantillon d'entra&#238;nement<a class="anchor-link" href="#Cr&#233;ation-du-r&#233;seau-et-pr&#233;paration-de-l'&#233;chantillon-d'entra&#238;nement">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://scikit-learn.org">scikit-learn</a> permet de créer, d'entraîner, et d'évaluer un réseau de neurones en quelques lignes de code.</p>
+<p>Nous allons créer un réseau extrêmement simple, avec seulement trois couches:</p>
+<ul>
+<li>une couche d'entrée (<em>input layer</em>), avec un noeud par pixel dans les images (64 noeuds, donc). Un noeud est un neurone qui ne fait rien. Il se content de prendre la valeur en entrée et de la transmettre aux neurones de la couche suivante.</li>
+<li>une couche cachée (<em>hidden layer</em>) avec 15 neurones. Nous aurions pu choisir un autre nombre de neurones, et ajouter des couches avec différents nombres de neurones</li>
+<li>une couche de sortie (<em>output layer</em>) avec 10 neurones, correspondant à nos 10 classes de chiffres, de 0 à 9</li>
+</ul>
+<p>On dit que ce type de réseau est <em>dense</em>, ce qui veut dire que dans chaque couche, chaque neurone est connecté avec tous les neurones des couches précédentes et suivantes.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="https://github.com/cbernet/maldives/raw/master/handwritten_digits_sklearn/simple_dense.png" alt="Simple dense network"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>La couche d'entrée nécessite un tableau unidimensionnel en entrée, mais nos images ont deux dimensions. Il nous faut donc les "aplatir", c'est à dire les sérialiser:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">digits</span><span class="o">.</span><span class="n">target</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">digits</span><span class="o">.</span><span class="n">images</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(1797, 64)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Maintenant, nous avons 1797 images aplaties. Les deux dimensions de nos images 8x8 ont été forcées vers une seule dimension en écrivant les lignes de 8 pixels les unes après les autres. La première image que nous avons affichée tout à l'heure est maintenant représentée par un tableau 1D avec 8x8 = 64 cases. Vous pouvez vérifier que les valeurs ci-dessous sont les mêmes que dans l'image 2D originale.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([ 0.,  0.,  5., 13.,  9.,  1.,  0.,  0.,  0.,  0., 13., 15., 10.,
+       15.,  5.,  0.,  0.,  3., 15.,  2.,  0., 11.,  8.,  0.,  0.,  4.,
+       12.,  0.,  0.,  8.,  8.,  0.,  0.,  5.,  8.,  0.,  0.,  9.,  8.,
+        0.,  0.,  4., 11.,  0.,  1., 12.,  7.,  0.,  0.,  2., 14.,  5.,
+       10., 12.,  0.,  0.,  0.,  0.,  6., 13., 10.,  0.,  0.,  0.])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Séparons maintenant notre échantillon entre deux sous-échantillons indépendants:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">x_train</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1000</span><span class="p">:]</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1000</span><span class="p">:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Les 1000 premières images seront utilisées pour l'entraînement. Le reste de l'échantillon sera utilisé ensuite pour évaluer les performances du réseau.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nous pouvons maintenant créer le réseau de neurones. Nous utilisons une couche cachée avec 15 neurones, et scikit-learn trouve automatiquement le nombre de neurones à utiliser dans les couches d'entrée et de sortie. Ne prêtez pas attention aux autres paramètres, nous couvrirons cela dans de futurs tutos.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.neural_network</span> <span class="kn">import</span> <span class="n">MLPClassifier</span>
+
+<span class="n">mlp</span> <span class="o">=</span> <span class="n">MLPClassifier</span><span class="p">(</span><span class="n">hidden_layer_sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,),</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;logistic&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+                    <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">learning_rate_init</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Enfin, entraînons le réseau:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">mlp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Iteration 1, loss = 2.22958289
+Iteration 2, loss = 1.91207743
+Iteration 3, loss = 1.62507727
+Iteration 4, loss = 1.32649842
+Iteration 5, loss = 1.06100535
+Iteration 6, loss = 0.83995513
+Iteration 7, loss = 0.67806075
+Iteration 8, loss = 0.55175832
+Iteration 9, loss = 0.45840445
+Iteration 10, loss = 0.39149735
+Iteration 11, loss = 0.33676351
+Iteration 12, loss = 0.29059880
+Iteration 13, loss = 0.25437208
+Iteration 14, loss = 0.22838372
+Iteration 15, loss = 0.20200554
+Iteration 16, loss = 0.18186565
+Iteration 17, loss = 0.16461183
+Iteration 18, loss = 0.14990228
+Iteration 19, loss = 0.13892154
+Iteration 20, loss = 0.12833784
+Iteration 21, loss = 0.12138920
+Iteration 22, loss = 0.11407971
+Iteration 23, loss = 0.10677664
+Iteration 24, loss = 0.10037149
+Iteration 25, loss = 0.09593187
+Iteration 26, loss = 0.09250135
+Iteration 27, loss = 0.08676698
+Iteration 28, loss = 0.08356043
+Iteration 29, loss = 0.08209789
+Iteration 30, loss = 0.07649168
+Iteration 31, loss = 0.07410898
+Iteration 32, loss = 0.07126869
+Iteration 33, loss = 0.06926956
+Iteration 34, loss = 0.06578496
+Iteration 35, loss = 0.06374913
+Iteration 36, loss = 0.06175492
+Iteration 37, loss = 0.05975664
+Iteration 38, loss = 0.05764485
+Iteration 39, loss = 0.05623663
+Iteration 40, loss = 0.05420966
+Iteration 41, loss = 0.05413911
+Iteration 42, loss = 0.05256140
+Iteration 43, loss = 0.05020265
+Iteration 44, loss = 0.04902779
+Iteration 45, loss = 0.04788382
+Iteration 46, loss = 0.04655532
+Iteration 47, loss = 0.04586089
+Iteration 48, loss = 0.04451758
+Iteration 49, loss = 0.04341598
+Iteration 50, loss = 0.04238096
+Iteration 51, loss = 0.04162200
+Iteration 52, loss = 0.04076839
+Iteration 53, loss = 0.04003180
+Iteration 54, loss = 0.03907774
+Iteration 55, loss = 0.03815565
+Iteration 56, loss = 0.03791975
+Iteration 57, loss = 0.03706276
+Iteration 58, loss = 0.03617874
+Iteration 59, loss = 0.03593227
+Iteration 60, loss = 0.03504175
+Iteration 61, loss = 0.03441259
+Iteration 62, loss = 0.03397449
+Iteration 63, loss = 0.03326990
+Iteration 64, loss = 0.03305025
+Iteration 65, loss = 0.03244893
+Iteration 66, loss = 0.03191504
+Iteration 67, loss = 0.03132169
+Iteration 68, loss = 0.03079707
+Iteration 69, loss = 0.03044946
+Iteration 70, loss = 0.03005546
+Iteration 71, loss = 0.02960555
+Iteration 72, loss = 0.02912799
+Iteration 73, loss = 0.02859103
+Iteration 74, loss = 0.02825959
+Iteration 75, loss = 0.02788968
+Iteration 76, loss = 0.02748725
+Iteration 77, loss = 0.02721247
+Iteration 78, loss = 0.02686225
+Iteration 79, loss = 0.02635636
+Iteration 80, loss = 0.02607439
+Iteration 81, loss = 0.02577613
+Iteration 82, loss = 0.02553642
+Iteration 83, loss = 0.02518749
+Iteration 84, loss = 0.02484300
+Iteration 85, loss = 0.02455379
+Iteration 86, loss = 0.02432480
+Iteration 87, loss = 0.02398548
+Iteration 88, loss = 0.02376004
+Iteration 89, loss = 0.02341261
+Iteration 90, loss = 0.02318255
+Iteration 91, loss = 0.02296065
+Iteration 92, loss = 0.02274048
+Iteration 93, loss = 0.02241054
+Iteration 94, loss = 0.02208181
+Iteration 95, loss = 0.02190861
+Iteration 96, loss = 0.02174404
+Iteration 97, loss = 0.02156939
+Iteration 98, loss = 0.02119768
+Iteration 99, loss = 0.02101874
+Iteration 100, loss = 0.02078230
+Iteration 101, loss = 0.02061573
+Iteration 102, loss = 0.02039802
+Iteration 103, loss = 0.02017245
+Iteration 104, loss = 0.01997162
+Iteration 105, loss = 0.01989280
+Iteration 106, loss = 0.01963828
+Iteration 107, loss = 0.01941850
+Iteration 108, loss = 0.01933154
+Iteration 109, loss = 0.01911473
+Iteration 110, loss = 0.01905371
+Iteration 111, loss = 0.01876085
+Iteration 112, loss = 0.01860656
+Iteration 113, loss = 0.01848655
+Iteration 114, loss = 0.01834844
+Iteration 115, loss = 0.01818981
+Iteration 116, loss = 0.01798523
+Iteration 117, loss = 0.01783630
+Iteration 118, loss = 0.01771441
+Iteration 119, loss = 0.01749814
+Iteration 120, loss = 0.01738339
+Iteration 121, loss = 0.01726549
+Iteration 122, loss = 0.01709638
+Iteration 123, loss = 0.01698340
+Iteration 124, loss = 0.01684606
+Iteration 125, loss = 0.01667016
+Iteration 126, loss = 0.01654172
+Iteration 127, loss = 0.01641832
+Iteration 128, loss = 0.01630111
+Iteration 129, loss = 0.01623051
+Iteration 130, loss = 0.01612736
+Iteration 131, loss = 0.01590220
+Iteration 132, loss = 0.01582485
+Iteration 133, loss = 0.01571372
+Iteration 134, loss = 0.01560349
+Iteration 135, loss = 0.01557688
+Iteration 136, loss = 0.01534420
+Iteration 137, loss = 0.01527883
+Iteration 138, loss = 0.01517545
+Iteration 139, loss = 0.01503663
+Iteration 140, loss = 0.01501192
+Iteration 141, loss = 0.01482535
+Iteration 142, loss = 0.01471388
+Iteration 143, loss = 0.01463948
+Iteration 144, loss = 0.01454059
+Iteration 145, loss = 0.01441742
+Iteration 146, loss = 0.01431741
+Iteration 147, loss = 0.01428414
+Iteration 148, loss = 0.01416364
+Iteration 149, loss = 0.01406742
+Iteration 150, loss = 0.01402651
+Iteration 151, loss = 0.01389720
+Iteration 152, loss = 0.01381412
+Iteration 153, loss = 0.01371300
+Iteration 154, loss = 0.01362465
+Iteration 155, loss = 0.01357048
+Iteration 156, loss = 0.01348760
+Training loss did not improve more than tol=0.000100 for two consecutive epochs. Stopping.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[18]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>MLPClassifier(activation=&#39;logistic&#39;, alpha=0.0001, batch_size=&#39;auto&#39;,
+       beta_1=0.9, beta_2=0.999, early_stopping=False, epsilon=1e-08,
+       hidden_layer_sizes=(15,), learning_rate=&#39;constant&#39;,
+       learning_rate_init=0.1, max_iter=200, momentum=0.9,
+       nesterovs_momentum=True, power_t=0.5, random_state=1, shuffle=True,
+       solver=&#39;sgd&#39;, tol=0.0001, validation_fraction=0.1, verbose=True,
+       warm_start=False)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>L'entraînement était très rapide car le réseau de neurones est simple et car l'échantillon d'entraînement est petit. Maintenant que le réseau de neurones est prêt, voyons ce qu'il prédit pour les images de test.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">mlp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="n">predictions</span><span class="p">[:</span><span class="mi">50</span><span class="p">]</span> 
+<span class="c1"># on regarde juste la prédiction pour </span>
+<span class="c1"># les 50 premières images dans l&#39;échantillon de test</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[20]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([1, 4, 0, 5, 3, 6, 9, 6, 1, 7, 5, 4, 4, 7, 2, 8, 2, 2, 5, 7, 9, 5,
+       4, 4, 9, 0, 8, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 3, 0, 1, 2, 3, 4,
+       5, 6, 7, 8, 5, 0])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Ces prédictions devraient être assez proches des étiquettes de l'échantillon de test, vérifions cela (merci de bien vouloir comparer les valeurs de ces deux tableaux)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">y_test</span><span class="p">[:</span><span class="mi">50</span><span class="p">]</span> 
+<span class="c1"># étiquettes pour les 50 premiers exemples de l&#39;échantillon de test</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[21]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([1, 4, 0, 5, 3, 6, 9, 6, 1, 7, 5, 4, 4, 7, 2, 8, 2, 2, 5, 7, 9, 5,
+       4, 4, 9, 0, 8, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4,
+       5, 6, 7, 8, 9, 0])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Pas mal! On voit que la totalité ou presque des prédictions correspondent à la vérité.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Mais peut-on être un peu plus quantitatif? Nous pouvons calculer la <em>précision</em> du classement, qui est la probabilité de classer un chiffre dans la bonne catégorie. Là encore, scikit-learn nous fournit un outil tout prêt pour cela:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+<span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[22]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.9159347553324969</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Cette valeur est la probabilité que les chiffres de l'échantillon de test sont classés dans la bonne catégorie. 
+Ainsi, dans 91.6% des cas, le classement est correct.</p>
+<p><strong>Nous avons donc obtenu une précision de 91.6% avec ce réseau de neurones très simple. Pas mal!</strong></p>
+<p>Mais ce n'est qu'un premier essai.</p>
+<p>Et je dois d'ailleurs vous avouer que j'ai volontairement choisi une architecture ultra-simpliste pour ce réseau afin d'éviter d'obtenir une trop bonne performance. Nous verrons plus tard comment optimiser le réseau pour maximiser la précision.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Et-ensuite?">Et ensuite?<a class="anchor-link" href="#Et-ensuite?">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Dans ce tuto, vous avez appris</p>
+<ul>
+<li>Les grands principes de l'apprentissage machine supervisé pour le classement </li>
+<li>Comment installer et utiliser la suite scientifique de python pour le machine learning</li>
+<li>Comment comprendre et valider l'échantillon de données d'entrée</li>
+<li>Comment entraîner un réseau de neurones à la reconnaissance d'images, permettant d'obtenir une précision de plus de 90% pour le classement de chiffres manuscrits. </li>
+</ul>
+<p>Ce n'est que le début! Dans les prochains posts, nous allons</p>
+<ul>
+<li>tenter d'optimiser notre réseau pour une meilleure précision</li>
+<li>utiliser le deep learning (des réseaux bien plus complexes) pour atteindre une précision supérieure à 99%. </li>
+<li>plonger un peu plus dans les mécanismes de l'entraînement pour comprendre pourquoi nous avons créé notre réseau de cette manière-là. </li>
+</ul>
+
+</div>
+</div>
+</div>
+ 
+
