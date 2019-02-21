@@ -56,24 +56,34 @@ def preprocess(label, reviews):
         words = [word for word in words if word not in stop_words]
         revdata['preproc'] = words
 
+def preprocess_all(dbname='preprocessed'):
+    all_samples = dict()    
+    for train_test in ['train','test']:
+        for pos_neg in ['pos', 'neg']:
+            label, samples = load_reviews(train_test,pos_neg,stop=nreviews)
+            preprocess(label, samples)
+            all_samples[label] = samples
+    print('writing to db...')
+    sh = shelve.open(dbname)
+    sh['data'] = all_samples
+    sh.close()
+    return all_samples
+
+def load_all(dbname='preprocessed'):
+    sh = shelve.open(dbname)
+    all_samples = sh['data']
+    sh.close()
+    return all_samples
+    
 if __name__ == '__main__':
 
-    do_preprocess = False
-    nreviews = 10
+    do_preprocess = True
+    nreviews = None
+    dbname = 'full'
     if do_preprocess == True:
-        all_samples = dict()    
-        for train_test in ['train','test']:
-            for pos_neg in ['pos', 'neg']:
-                label, samples = load_reviews(train_test,pos_neg,stop=nreviews)
-                preprocess(label, samples)
-                all_samples[label] = samples
-        sh = shelve.open('preprocessed')
-        sh['data'] = all_samples
-        sh.close()
+        all_samples = preprocess_all(dbname)
     else: 
-        sh = shelve.open('preprocessed')
-        all_samples = sh['data']
-        sh.close()
+        all_samples = load_all(dbname)
     for key, reviews in all_samples.items():
         print(key, len(reviews))
         a_review = next(iter(reviews.values()))
