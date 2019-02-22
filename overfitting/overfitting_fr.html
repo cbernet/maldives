@@ -9,8 +9,8 @@
 <ul>
 <li>ce qu'est le sur-entraînement, et le voir en action;</li>
 <li>comment l'éviter;</li>
-<li>que si on utilide un réseau de neurones trop complexe pour la quantité de données dont on dispose, on obtient juste n'importe quoi;</li>
-<li>que les modèles complexes sont néanmoins nécessaires pour traîter les problèmes complexes, afin d'éviter le sous-entraînement (underfitting).</li>
+<li>que si on utilise un réseau de neurones trop complexe pour la quantité de données dont on dispose, on obtient juste n'importe quoi;</li>
+<li>que les modèles complexes sont néanmoins nécessaires pour traiter les problèmes complexes, afin d'éviter le sous-entraînement (underfitting).</li>
 </ul>
 <p><strong>Pré-requis</strong>:</p>
 <ul>
@@ -165,7 +165,7 @@
 <p>Avec si peu d'exemples, il n'est pas évident à l'oeil que les échantillons suivent une densité de probabilité Gaussienne. De plus, comme les Gaussiennes sont proches, les deux catégories se mélangent et il va être difficile de les séparer.</p>
 <h2 id="Sur-entra&#238;nement">Sur-entra&#238;nement<a class="anchor-link" href="#Sur-entra&#238;nement">&#182;</a></h2><p>Essayons cependant d'effectuer la classification avec un réseau de neurones de scikit-learn. Voici une explication des paramètres utilisés ci-dessous:</p>
 <ul>
-<li>trois couches cachées avec 50 neurones chacunes. J'ai choisi cette configuration assez complexe volontairement pour illustrer le sur-entraînement, qui se produit lorsque le modèle est trop complexe pour la taille de l'échantillon d'entraînement. </li>
+<li>trois couches cachées avec 50 neurones chacune. J'ai choisi cette configuration assez complexe volontairement pour illustrer le sur-entraînement, qui se produit lorsque le modèle est trop complexe pour la taille de l'échantillon d'entraînement. </li>
 <li>une ReLU comme fonction d'activation pour ces neurones, car la ReLU facilite l'entraînement dans les réseaux de neurones avec des couches cachées. </li>
 <li>un nombre maximum d'itérations élevé, pour donner au réseau la possibilité de converger. </li>
 <li>une graine fixée pour le générateur aléatoire, de façon à ce que vous obteniez exactement les mêmes résultats que moi, à chaque fois que vous ferez tourner le code. </li>
