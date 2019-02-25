@@ -7,7 +7,7 @@ ifile = open(fname)
 
 # read the first 100k entries
 # set to -1 to process everything
-stop = -1
+stop = 10000
 
 all_data = list()
 for i, line in enumerate(ifile):
@@ -25,6 +25,7 @@ for i, line in enumerate(ifile):
 # create the DataFrame
 df = pd.DataFrame(all_data, columns=['stars','text'])
 print(df)
+# df.to_hdf('reviews.h5','reviews')
 
 ifile.close()
 
