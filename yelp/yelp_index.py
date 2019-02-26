@@ -20,7 +20,11 @@ def process_file(fname):
     print(fname)
     with open(fname) as ifile:
         counter = Counter()
-        for i,line in enumerate(ifile): 
+        for i,line in enumerate(ifile):
+            if i==options.lines:
+                break
+            if i%10000==0:
+                print(i)            
             data = json.loads(line) 
             # extract what we want
             words = data['text']               
@@ -28,43 +32,50 @@ def process_file(fname):
                 if word in stopwords:
                     continue
                 counter[word]+=1
-            if i==stop:
-                break
-            if i%10000==0:
-                print(i)
         return counter
+
+def parse_args():
+    from optparse import OptionParser        
+    from base import setopts
+    usage = "usage: %prog [options] <file_pattern>"
+    parser = OptionParser(usage=usage)    
+    setopts(parser)
+    parser.add_option("-n", "--nwords",
+                      dest="nwords", default=20000, type=int,
+                      help="max number of words in vocabulary, default 20000")
+    (options, args) = parser.parse_args()    
+    if len(args)!=1:
+        parser.print_usage()
+        sys.exit(1)
+    pattern = args[0]
+    return options, pattern
 
 if __name__ == '__main__':
     import os
     import glob    
+    import pprint
     from index import Index
     import parallelize
 
-    
-    datadir = os.path.expanduser('~/Datasets/MachineLearning/yelp_dataset/')
-    # read the first entries
-    # set to -1 to process everything
-    stop = -1
-    # limit vocabulary to the most common words 
-    n_most_common = 10000
-    # use multiprocessing? 
-    parallel = True
+
+    options, pattern = parse_args()
     
     olddir = os.getcwd()
-    os.chdir(datadir)
+    os.chdir(options.datadir)
 
-    
-    fnames = glob.glob('xa?_tok.json')
-    print(fnames)
+    fnames = glob.glob(pattern)
        
-    nprocesses = len(fnames) if parallel else 1
+    nprocesses = len(fnames) if options.parallel else None
     results = parallelize.run(process_file, fnames, nprocesses)
 
     full_counter = Counter()
     for counter in results:
         full_counter.update(counter)
 
-    index = Index(full_counter, n_most_common)
+    index = Index(full_counter, options.nwords, n_most_common=options.nwords)
     index.save('index')
-
+    
+    pprint.pprint(full_counter.most_common(200))
+    print(len(full_counter))
+    print(index)
     os.chdir(olddir)    

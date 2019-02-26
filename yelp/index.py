@@ -57,3 +57,10 @@ class Index(object):
         '''return the list of codes corresponding to a list of words'''
         return [self.index.get(word, 1) for word in list_of_words]
              
+    def __str__(self):
+        return '\n'.join([
+            'Index: {} words'.format(len(self.words)),
+            pprint.pformat(self.words[:10]),
+            '...',
+            pprint.pformat(self.words[-1000:]),            
+        ])
