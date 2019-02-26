@@ -2,7 +2,7 @@ import json
 from collections import Counter
 
 def process_file(fname):
-    '''process a review JSLON lines file and count the words in all reviews.
+    '''process a review JSON lines file and count the words in all reviews.
     returns the counter, which will be used to find the most frequent words
     '''
     print(fname)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     datadir = os.path.expanduser('~/Datasets/MachineLearning/yelp_dataset/')
     # read the first entries
     # set to -1 to process everything
-    stop = 100000
+    stop = -1
     # use multiprocessing? 
     parallel = True    
     

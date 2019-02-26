@@ -6,12 +6,13 @@ def run(func, fnames, nprocesses=None, timeout=10000):
     returns the list of results obtained for each file name
     '''
     results = []
-    if nprocesses:
+    if nprocesses and nprocesses>1:
         with Pool(processes=nprocesses) as pool:
             tmp = []
             for fname in fnames: 
                 tmp.append( pool.apply_async(func, [fname]) )
             for res in tmp: 
+                print('getting result')
                 results.append(res.get(timeout=timeout))
     else: 
         for fname in fnames: 

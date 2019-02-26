@@ -1,8 +1,10 @@
 import json
+import sys
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # open input file: 
-fname = 'review.json'
+fname = sys.argv[1]
 ifile = open(fname) 
 
 # read the first 100k entries
@@ -25,7 +27,7 @@ for i, line in enumerate(ifile):
 # create the DataFrame
 df = pd.DataFrame(all_data, columns=['stars','text'])
 print(df)
-# df.to_hdf('reviews.h5','reviews')
+# df.to_hdf('revie20ws.h5','reviews')
 
 ifile.close()
 

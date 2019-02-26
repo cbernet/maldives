@@ -33,7 +33,7 @@ class Index(object):
         word_to_index = dict()
         i = 0
         # reserved :
-        for tag in ['<UNK>', '<PAD>']: 
+        for tag in ['<PAD>','<UNK>']: 
             words.append(tag)
             word_to_index[tag] = i
             i += 1
@@ -55,5 +55,5 @@ class Index(object):
     
     def encode(self, list_of_words): 
         '''return the list of codes corresponding to a list of words'''
-        return [self.index.get(word, 0) for word in list_of_words]
+        return [self.index.get(word, 1) for word in list_of_words]
              
