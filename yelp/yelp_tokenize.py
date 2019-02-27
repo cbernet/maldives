@@ -7,7 +7,7 @@ import json
 
 import nltk
 from nltk.corpus import stopwords
-stop_words = set(stopwords.words('english'))
+# stop_words = set(stopwords.words('english'))
 from nltk.probability import FreqDist    
 
 def preprocess(text):
@@ -40,6 +40,8 @@ def process_file(fname):
     ifile.close()
     ofile.close()
 
+
+    
 if __name__ == '__main__':
     import os
     import glob    
