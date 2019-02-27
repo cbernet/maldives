@@ -2,6 +2,9 @@ import sys
 import os 
 
 def setopts(parser):
+    '''Set up base command line options, 
+    used in all scripts.
+    '''
     parser.add_option("-l", "--lines",
                       dest="lines", default=sys.maxsize, type=int,
                       help="max number of lines, default all")

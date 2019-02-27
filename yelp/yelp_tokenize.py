@@ -10,15 +10,14 @@ from nltk.corpus import stopwords
 from nltk.probability import FreqDist    
 
 def preprocess(text):
-    # set up natural language processing tools
-    # imported here because it takes a long time
     words = nltk.word_tokenize(text)
     words = [word.lower() for word in words]
-    # i think stopwords might be useful with lstm.. e.g. negations
-    # words = [word for word in words if word not in stop_words]
     return words
 
 def process_file(fname):
+    '''tokenize data in file fname. 
+    The output is written to fname_tok.json
+    '''
     print('opening', fname)
     ofname = fname + '_tok.json'
     ifile = open(fname)
@@ -30,9 +29,13 @@ def process_file(fname):
             break        
         # convert the json on this line to a dict
         data = json.loads(line) 
-        # extract what we want
-        text = data['text']   
-        words = preprocess(text)
+        # extract the review text
+        text = data['text']
+        # tokenize
+        words = nltk.word_tokenize(text)
+        # convert all words to lower case 
+        words = [word.lower() for word in words]
+        # updating JSON and writing to output file
         data['text'] = words
         line = json.dumps(data)
         ofile.write(line+'\n')
@@ -40,6 +43,9 @@ def process_file(fname):
     ofile.close()
 
 def parse_args():
+    '''Parse command line arguments.
+    See base.setopts for more information
+    '''
     from optparse import OptionParser        
     from base import setopts
     usage = "usage: %prog [options] <file_pattern>"
@@ -49,6 +55,8 @@ def parse_args():
     if len(args)!=1:
         parser.print_usage()
         sys.exit(1)
+    # pattern should match the files you want to process, 
+    # e.g. 'xa*'
     pattern = args[0]
     return options, pattern
 
