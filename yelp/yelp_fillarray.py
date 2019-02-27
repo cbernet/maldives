@@ -6,19 +6,28 @@ import numpy as np
 from collections import Counter
 
 def file_len(fname):
+    '''Counts the number of lines in the file with name fname
+    '''
     with open(fname) as f:
         for i, l in enumerate(f):
             pass
     return i + 1
 
 def process_file(fname):
-    '''process a review JSON lines file and count the words in all reviews.
-    returns the counter, which will be used to find the most frequent words
+    '''process a review JSON lines file 
+    and return a numpy array with the dataq.
     '''
     print(fname)
     ifile = open(fname)
+    # limit on the number of words in reviews
     limit = options.nwords
     stop = options.lines
+    # creating the numpy array in advance 
+    # so that we don't have to resize it later.
+    # the total size along the second axis is limit+1 
+    # to leave one additional slot for the rating.
+    # all cells are initialized to 0 so that the padding
+    # is automatically done. 
     all_data = np.zeros((min(file_len(fname),stop), limit+1),
                         dtype=np.int16)
     for i,line in enumerate(ifile): 
@@ -28,11 +37,16 @@ def process_file(fname):
             break        
         data = json.loads(line) 
         codes = data['text']  
+        # we can decide to keep the unknown words (code=1)
+        # or just to drop them (default). 
         if not options.keep_unknown:
             codes = [code for code in codes if code!=1]
         stars = data['stars']
+        # store the rating in the 1st column
         all_data[i,0] = stars
-        all_data[i,1:len(codes)+1] = codes[:limit]
+        # store the encoded words afterwards 
+        # the review is truncated to limit. 
+        all_data[i,1:] = codes[:limit]
     ifile.close()
     # print(len(all_stars), len(all_reviews
     print(fname,  'done')
@@ -74,10 +88,12 @@ if __name__ == '__main__':
     
     nprocesses = len(fnames) if options.parallel else None
     results = parallelize.run(process_file, fnames, nprocesses)
+    # concatenating the numpy arrays for all files
     print('concatenating')
     data = np.concatenate(results)
     print(data) 
     
+    # saving the full numpy array to an hdf5 file
     ofname = 'data.h5'
     print('writing array to {}/{}'.format(ofname,'reviews'))
     h5 = h5py.File(ofname, 'w')
