@@ -1,7 +1,5 @@
-# TODO:
-# - disk size + 72%. can we improve by storing to another format, h5? 
-# - add multiprocessing
-# - think about next steps 
+'''Tokenize a JSON lines dataset with nltk
+'''
 
 import json
 
