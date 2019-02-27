@@ -38,15 +38,16 @@ def process_file(fname):
         data = json.loads(line) 
         codes = data['text']  
         # we can decide to keep the unknown words (code=1)
-        # or just to drop them (default). 
+        # or just to drop them (default).
         if not options.keep_unknown:
             codes = [code for code in codes if code!=1]
         stars = data['stars']
         # store the rating in the 1st column
         all_data[i,0] = stars
         # store the encoded words afterwards 
-        # the review is truncated to limit. 
-        all_data[i,1:] = codes[:limit]
+        # the review is truncated to limit.
+        truncated = codes[:limit]
+        all_data[i,1:len(truncated)+1] = truncated
     ifile.close()
     # print(len(all_stars), len(all_reviews
     print(fname,  'done')
@@ -71,7 +72,6 @@ def parse_args():
     pattern = args[0]
     return options, pattern
 
-from base import setopts
     
 if __name__ == '__main__':
     import os
