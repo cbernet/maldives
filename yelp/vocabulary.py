@@ -1,11 +1,15 @@
+'''Vocabulary'''
+
 import shelve
 import pprint
 
 
-class Index(object): 
+class Vocabulary(object): 
+    '''Vocabulary'''
     
     def __init__(self, counter=None, dbfname=None, n_most_common=10000):
-        '''Constructor. Either provide a counter or the path to a shelve db'''
+        '''Constructor. Either provide a counter to build the vocabulary 
+        or the path to a shelve db to load a pre-existing vocabulary.'''
         if not counter and not dbfname: 
             raise ValueError('provide either a counter or a db filename')   
         if counter: 
@@ -51,16 +55,12 @@ class Index(object):
         
     def decode(self, list_of_codes):
         '''print the sentence corresponding to a list of codes'''
-        return ' '.join(self.words[i] for i in list_of_codes)
+        return [self.words[i] for i in list_of_codes]
     
     def encode(self, list_of_words): 
         '''return the list of codes corresponding to a list of words'''
         return [self.index.get(word, 1) for word in list_of_words]
              
     def __str__(self):
-        return '\n'.join([
-            'Index: {} words'.format(len(self.words)),
-            pprint.pformat(self.words[:10]),
-            '...',
-            pprint.pformat(self.words[-1000:]),            
-        ])
+        return pprint.pformat(self.words[:20])
+   

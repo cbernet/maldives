@@ -48,7 +48,7 @@ def parse_args():
         parser.print_usage()
         sys.exit(1)
     # pattern should match the files you want to process, 
-    # e.g. 'xa*'
+    # e.g. 'xa?'
     pattern = args[0]
     return options, pattern
 

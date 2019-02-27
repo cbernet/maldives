@@ -16,7 +16,7 @@ def process_file(fname):
             print(i)        
         data = json.loads(line) 
         words = data['text']     
-        codes = index.encode(words)
+        codes = vocabulary.encode(words)
         data['text'] = codes
         line = json.dumps(data)
         ofile.write(line+'\n')        
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     import glob    
     import pprint
     import shelve
-    from index import Index
+    from vocabulary import Vocabulary
     import parallelize
     
     options, pattern = parse_args()
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     olddir = os.getcwd()
     os.chdir(options.datadir)
 
-    index = Index(dbfname='index')
+    vocabulary = Vocabulary(dbfname='index')
         
     fnames = glob.glob(pattern)
     print(fnames)

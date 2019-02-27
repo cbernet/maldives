@@ -63,7 +63,6 @@ if __name__ == '__main__':
     import os
     import pprint
     import h5py
-    from index import Index
     import parallelize
 
     options, pattern = parse_args()
@@ -72,8 +71,6 @@ if __name__ == '__main__':
     os.chdir(options.datadir)
         
     fnames = glob.glob(pattern)
-
-    index = Index(dbfname='index')
     
     nprocesses = len(fnames) if options.parallel else None
     results = parallelize.run(process_file, fnames, nprocesses)
