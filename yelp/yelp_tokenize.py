@@ -9,11 +9,6 @@ from nltk.corpus import stopwords
 # stop_words = set(stopwords.words('english'))
 from nltk.probability import FreqDist    
 
-def preprocess(text):
-    words = nltk.word_tokenize(text)
-    words = [word.lower() for word in words]
-    return words
-
 def process_file(fname):
     '''tokenize data in file fname. 
     The output is written to fname_tok.json
