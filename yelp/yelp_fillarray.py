@@ -15,7 +15,7 @@ def file_len(fname):
 
 def process_file(fname):
     '''process a review JSON lines file 
-    and return a numpy array with the dataq.
+    and return a numpy array with the data.
     '''
     print(fname)
     ifile = open(fname)
