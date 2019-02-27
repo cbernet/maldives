@@ -6,6 +6,7 @@
 import json
 
 import nltk
+nltk.download('punkt')
 from nltk.corpus import stopwords
 # stop_words = set(stopwords.words('english'))
 from nltk.probability import FreqDist    
@@ -25,6 +26,10 @@ def process_file(fname):
     ifile = open(fname)
     ofile = open(ofname,'w')
     for i, line in enumerate(ifile):
+        if i%1000 == 0:
+            print(i) 
+        if i==options.lines:
+            break        
         # convert the json on this line to a dict
         data = json.loads(line) 
         # extract what we want
@@ -33,33 +38,36 @@ def process_file(fname):
         data['text'] = words
         line = json.dumps(data)
         ofile.write(line+'\n')
-        if i%1000 == 0:
-            print(i) 
-        if i==stop:
-            break
     ifile.close()
     ofile.close()
 
+def parse_args():
+    from optparse import OptionParser        
+    from base import setopts
+    usage = "usage: %prog [options] <file_pattern>"
+    parser = OptionParser(usage=usage)    
+    setopts(parser)
+    (options, args) = parser.parse_args()    
+    if len(args)!=1:
+        parser.print_usage()
+        sys.exit(1)
+    pattern = args[0]
+    return options, pattern
 
-    
 if __name__ == '__main__':
     import os
-    import glob    
+    import glob
+    import parallelize
     from multiprocessing import Pool
     
-    datadir = os.path.expanduser('~/Datasets/MachineLearning/yelp_dataset/')
-    os.chdir(datadir)
+    options, pattern = parse_args()
+    olddir = os.getcwd()    
+    os.chdir(options.datadir)
 
-    fnames = glob.glob('xa?')
-    # read the first entries
-    # set to -1 to process everything
-    stop = -1
-    parallel = True
-    print(fnames)
-    
-    if not parallel:
-        for fname in fnames:
-            process_file(fname)
-    else:
-        with Pool(10) as p: 
-            p.map(process_file,fnames)
+    fnames = glob.glob(pattern)
+       
+    nprocesses = len(fnames) if options.parallel else None
+    results = parallelize.run(process_file, fnames, nprocesses)
+            
+    os.chdir(olddir)    
+
