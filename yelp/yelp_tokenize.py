@@ -5,9 +5,6 @@ import json
 
 import nltk
 nltk.download('punkt')
-from nltk.corpus import stopwords
-# stop_words = set(stopwords.words('english'))
-from nltk.probability import FreqDist    
 
 def process_file(fname):
     '''tokenize data in file fname. 
