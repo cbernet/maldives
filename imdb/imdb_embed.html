@@ -2,7 +2,9 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="About-this-post">About this post<a class="anchor-link" href="#About-this-post">&#182;</a></h2><p>This tutorial is the third part of a series about natural language processing (NLP). Our goal is to train a neural network to do sentiment analysis, or in other words to understand whether some text is globally positive or negative. The first layer of our neural network will perform an operation called word embedding, which is essential in NLP with deep learning.</p>
+<h2 id="About-this-post">About this post<a class="anchor-link" href="#About-this-post">&#182;</a></h2><p>This tutorial is the third part of a series about natural language processing (NLP).</p>
+<p>Our goal is to train a neural network to find out whether some text is globally positive or negative, a task called sentiment analysis.</p>
+<p>The first layer of our neural network will perform an operation called <strong>word embedding</strong>, which is essential in NLP with deep learning.</p>
 <p>In this post, you will learn:</p>
 <ul>
 <li>what is word embedding </li>
@@ -146,7 +148,8 @@ label: 0
 <span class="n">vocabulary</span><span class="p">[</span><span class="s2">&quot;&lt;UNUSED&gt;&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
 
 <span class="c1"># reversing the vocabulary. </span>
-<span class="c1"># in the index, the key is an integer, and </span>
+<span class="c1"># in the index, the key is an integer, </span>
+<span class="c1"># and the value is the corresponding word.</span>
 <span class="n">index</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">value</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">vocabulary</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
 
 <span class="k">def</span> <span class="nf">decode_review</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
