@@ -24,11 +24,13 @@ def process_file(fname, options):
     stop = options.lines
     # creating the numpy array in advance 
     # so that we don't have to resize it later.
-    # the total size along the second axis is limit+1 
-    # to leave one additional slot for the rating.
+    # the total size along the second axis is limit+4 
+    # to leave four additional slots for 
+    # the rating, useful, funny, cool   
     # all cells are initialized to 0 so that the padding
     # is automatically done. 
-    all_data = np.zeros((min(file_len(fname),stop), limit+1),
+    n_features = 4
+    all_data = np.zeros((min(file_len(fname),stop), limit+n_features),
                         dtype=np.int16)
     for i,line in enumerate(ifile): 
         if i%10000==0:
@@ -41,13 +43,15 @@ def process_file(fname, options):
         # or just to drop them (default).
         if not options.keep_unknown:
             codes = [code for code in codes if code!=1]
-        stars = data['stars']
         # store the rating in the 1st column
-        all_data[i,0] = stars
+        all_data[i,0] = data['stars']
+        all_data[i,1] = data['useful']
+        all_data[i,2] = data['funny']
+        all_data[i,3] = data['cool']
         # store the encoded words afterwards 
         # the review is truncated to limit.
         truncated = codes[:limit]
-        all_data[i,1:len(truncated)+1] = truncated
+        all_data[i,n_features:len(truncated)+n_features] = truncated
     ifile.close()
     # print(len(all_stars), len(all_reviews
     print(fname,  'done')
