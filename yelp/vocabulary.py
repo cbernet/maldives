@@ -54,6 +54,8 @@ class Vocabulary(object):
     
     @classmethod
     def load(cls, fname):
+        '''load a vocabulary from a pickle file 
+        and return the vocabulary object'''
         with open(fname + '.pck', 'rb') as pckfile:
             return pickle.load(pckfile)        
         
@@ -67,6 +69,3 @@ class Vocabulary(object):
              
     def __str__(self):
         return pprint.pformat(self.words[:20])
-   
-    def __eq__(self, other): 
-        return 
