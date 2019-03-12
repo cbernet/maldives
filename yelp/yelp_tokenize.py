@@ -1,17 +1,20 @@
 '''Tokenize a JSON lines dataset with nltk
 '''
 
+import os 
 import json
-
 import nltk
 nltk.download('punkt')
 
-def process_file(fname):
+def output_fname(input_fname):
+    return os.path.splitext(input_fname)[0] + '_tok.json'
+
+def process_file(fname, options):
     '''tokenize data in file fname. 
     The output is written to fname_tok.json
     '''
     print('opening', fname)
-    ofname = fname + '_tok.json'
+    ofname = output_fname(fname)
     ifile = open(fname)
     ofile = open(ofname,'w')
     for i, line in enumerate(ifile):
@@ -65,7 +68,7 @@ if __name__ == '__main__':
     fnames = glob.glob(pattern)
        
     nprocesses = len(fnames) if options.parallel else None
-    results = parallelize.run(process_file, fnames, nprocesses)
+    results = parallelize.run(process_file, fnames, nprocesses, options)
             
     os.chdir(olddir)    
 
