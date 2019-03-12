@@ -1,24 +1,24 @@
 '''Vocabulary'''
 
-import shelve
+import pickle
 import pprint
 
 
 class Vocabulary(object): 
     '''Vocabulary'''
     
-    def __init__(self, counter=None, dbfname=None, n_most_common=10000):
+    def __init__(self, counter=None, n_most_common=10000):
         '''Constructor. Either provide a counter to build the vocabulary 
         or the path to a shelve db to load a pre-existing vocabulary.'''
+        self.n_most_common = n_most_common
         if not counter and not dbfname: 
             raise ValueError('provide either a counter or a db filename')   
         if counter: 
             self.words, self.index = self._build_index(counter, n_most_common)
         else:
-            with shelve.open(dbfname) as sh:
-                self.words = sh['words']
-                self.index = sh['index']
-                
+            self.words = None
+            self.index = None
+            
     def _build_index(self, counter, n_most_common):
         '''takes the most frequent words in common. 
         returns: list_of_words, index 
@@ -47,11 +47,10 @@ class Vocabulary(object):
             i += 1 
         return words, word_to_index
             
-    def save(self, dbfname): 
+    def save(self, fname): 
         '''Save words, index, stopwords to a shelve'''
-        with shelve.open('index') as sh:
-            sh['words'] = self.words
-            sh['index'] = self.index
+        with open(fname + '.pck', 'wb') as pckfile:
+            pickle.dump(self, pckfile)
         
     def decode(self, list_of_codes):
         '''print the sentence corresponding to a list of codes'''
