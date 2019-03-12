@@ -4,6 +4,7 @@
 import os 
 import json
 import nltk
+import sys 
 nltk.download('punkt')
 
 def output_fname(input_fname):

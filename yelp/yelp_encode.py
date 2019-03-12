@@ -53,7 +53,7 @@ if __name__ == '__main__':
     olddir = os.getcwd()
     os.chdir(options.datadir)
 
-    vocabulary = Vocabulary(dbfname='index')
+    vocabulary = Vocabulary.load('index')
         
     fnames = glob.glob(pattern)
     print(fnames)

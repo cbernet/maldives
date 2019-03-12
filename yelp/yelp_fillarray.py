@@ -98,5 +98,5 @@ if __name__ == '__main__':
     
     nprocesses = len(fnames) if options.parallel else None
     results = parallelize.run(process_file, fnames, nprocesses, options)
-
+    finalize(results)
     os.chdir(olddir)
