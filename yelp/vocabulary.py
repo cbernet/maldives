@@ -51,6 +51,11 @@ class Vocabulary(object):
         '''Save words, index, stopwords to a shelve'''
         with open(fname + '.pck', 'wb') as pckfile:
             pickle.dump(self, pckfile)
+    
+    @classmethod
+    def load(cls, fname):
+        with open(fname + '.pck', 'rb') as pckfile:
+            return pickle.load(pckfile)        
         
     def decode(self, list_of_codes):
         '''print the sentence corresponding to a list of codes'''
