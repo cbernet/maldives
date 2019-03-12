@@ -3,7 +3,7 @@ import sys
 import os
 import glob
 import numpy as np
-from collections import Counter
+import h5py
 
 def file_len(fname):
     '''Counts the number of lines in the file with name fname
@@ -13,7 +13,7 @@ def file_len(fname):
             pass
     return i + 1
 
-def process_file(fname):
+def process_file(fname, options):
     '''process a review JSON lines file 
     and return a numpy array with the data.
     '''
@@ -53,6 +53,18 @@ def process_file(fname):
     print(fname,  'done')
     return all_data
 
+def finalize(results):
+    # concatenating the numpy arrays for all files
+    print('concatenating')
+    data = np.concatenate(results)
+    print(data) 
+    # saving the full numpy array to an hdf5 file
+    ofname = 'data.h5'
+    print('writing array to {}/{}'.format(ofname,'reviews'))
+    h5 = h5py.File(ofname, 'w')
+    h5.create_dataset('reviews', data=data) 
+    h5.close()    
+
 def parse_args():
     from optparse import OptionParser        
     from base import setopts
@@ -71,12 +83,10 @@ def parse_args():
         sys.exit(1)
     pattern = args[0]
     return options, pattern
-
     
 if __name__ == '__main__':
     import os
     import pprint
-    import h5py
     import parallelize
 
     options, pattern = parse_args()
@@ -87,16 +97,6 @@ if __name__ == '__main__':
     fnames = glob.glob(pattern)
     
     nprocesses = len(fnames) if options.parallel else None
-    results = parallelize.run(process_file, fnames, nprocesses)
-    # concatenating the numpy arrays for all files
-    print('concatenating')
-    data = np.concatenate(results)
-    print(data) 
-    
-    # saving the full numpy array to an hdf5 file
-    ofname = 'data.h5'
-    print('writing array to {}/{}'.format(ofname,'reviews'))
-    h5 = h5py.File(ofname, 'w')
-    h5.create_dataset('reviews', data=data) 
-    h5.close()
+    results = parallelize.run(process_file, fnames, nprocesses, options)
+
     os.chdir(olddir)
