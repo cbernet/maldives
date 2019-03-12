@@ -16,7 +16,7 @@ stopwords = set(['.','i','a','and','the','to', 'was', 'it', 'of', 'for', 'in', '
                  'that', 'so', 'do', 'our', 'the', 'and', ',', 'my', 'in', 'we', 'you', 
                  'are', 'is', 'be', 'me'])
 
-def process_file(fname):
+def process_file(fname, options):
     '''process a review JSLON lines file and count the occurence 
     of each words in all reviews.
     returns the counter, which will be used to find the most frequent words
@@ -70,13 +70,13 @@ if __name__ == '__main__':
     fnames = glob.glob(pattern)
        
     nprocesses = len(fnames) if options.parallel else None
-    results = parallelize.run(process_file, fnames, nprocesses)
+    results = parallelize.run(process_file, fnames, nprocesses, options)
 
     full_counter = Counter()
     for counter in results:
         full_counter.update(counter)
 
-    vocabulary = Vocabulary(full_counter, options.nwords, n_most_common=options.nwords)
+    vocabulary = Vocabulary(full_counter, n_most_common=options.nwords)
     vocabulary.save('index')
     
     pprint.pprint(full_counter.most_common(200))

@@ -1,4 +1,5 @@
 from vocabulary import Vocabulary
+from yelp_vocabulary import process_file
 
 import unittest
 from collections import Counter
@@ -31,3 +32,16 @@ class TestVocabulary(unittest.TestCase):
                              voc.words)
         self.assertDictEqual(voc3.index,
                              voc.index)
+        
+    def test_script(self):
+        import test.options as options
+        options.nwords = 20000
+        fname = 'test/review_100_tok.json'
+        # test that the script runs 
+        counter = process_file(fname, options)
+        voc = Vocabulary(counter, n_most_common=options.nwords)
+        # and that it produces the same results as the reference
+        voc_ref = Vocabulary.load('test/vocabulary')
+        self.assertListEqual(voc.words, voc_ref.words)
+        self.assertDictEqual(voc.index, voc_ref.index)
+        

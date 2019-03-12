@@ -68,3 +68,5 @@ class Vocabulary(object):
     def __str__(self):
         return pprint.pformat(self.words[:20])
    
+    def __eq__(self, other): 
+        return 
