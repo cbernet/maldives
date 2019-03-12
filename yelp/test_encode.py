@@ -1,12 +1,12 @@
 import unittest
-from yelp_tokenize import process_file, output_fname
+from yelp_encode import process_file, output_fname
+from vocabulary import Vocabulary
 
 import os 
 import json
 
-fname = 'review100.json'
 
-class TestTokenize(unittest.TestCase):
+class TestEncode(unittest.TestCase):
     
     def setUp(self):
         self.oldpwd = os.getcwd()
@@ -17,16 +17,20 @@ class TestTokenize(unittest.TestCase):
         
     def test_1(self):
         import test.options as options
-        process_file(fname, options)
+        fname = 'review100_tok.json'
+        voc = Vocabulary.load('vocabulary')
+        process_file(fname, options, voc)
         # output file name exists
         outfname = output_fname(fname)
         self.assertTrue(os.path.isfile(outfname))
         with open(outfname) as outf:
             outlines = outf.readlines()
             data = json.loads(outlines[0])
-            # tokenization worked
-            self.assertListEqual(data['text'], 
-                                 ["total", "bill", "for", "this", "horrible", "service", "?", "over", "$", "8gs", ".", "these", "crooks", "actually", "had", "the", "nerve", "to", "charge", "us", "$", "69", "for", "3", "pills", ".", "i", "checked", "online", "the", "pills", "can", "be", "had", "for", "19", "cents", "each", "!", "avoid", "hospital", "ers", "at", "all", "costs", "."])
+            # encoding worked
+            self.assertListEqual(
+                data['text'],
+                [754, 570, 1, 5, 755, 38, 55, 72, 54, 1142, 1, 222, 1143, 189, 12, 1, 1144, 1, 432, 60, 54, 1145, 1, 223, 756, 1, 1, 433, 757, 1, 756, 57, 1, 12, 1, 1146, 1147, 190, 2, 351, 1148, 1149, 11, 24, 1150, 1]
+            )
             with open(fname) as inf:
                 inlines = inf.readlines()
                 # same number of lines as in the input file   

@@ -1,12 +1,16 @@
 import json
+import os
 from collections import Counter
 
-def process_file(fname):
+def output_fname(input_fname):
+    return  input_fname.split('_')[0] + '_enc.json'
+
+def process_file(fname, options, vocabulary):
     '''process a review JSON lines file and count the words in all reviews.
     returns the counter, which will be used to find the most frequent words
     '''
     print(fname)
-    ofname = fname.split('_')[0] + '_enc.json'
+    ofname = output_fname(fname)  
     ifile = open(fname) 
     ofile = open(ofname,'w')
     for i,line in enumerate(ifile): 
@@ -55,5 +59,6 @@ if __name__ == '__main__':
     print(fnames)
     
     nprocesses = len(fnames) if options.parallel else None
-    results = parallelize.run(process_file, fnames, nprocesses)
+    results = parallelize.run(process_file, fnames, nprocesses, 
+                              options, vocabulary)
     

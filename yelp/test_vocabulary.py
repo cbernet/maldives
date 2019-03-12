@@ -4,6 +4,7 @@ from yelp_vocabulary import process_file
 import unittest
 from collections import Counter
 import pickle
+import os
 
 class TestVocabulary(unittest.TestCase):
     
@@ -32,11 +33,12 @@ class TestVocabulary(unittest.TestCase):
                              voc.words)
         self.assertDictEqual(voc3.index,
                              voc.index)
+        os.remove('voc.pck')
         
     def test_script(self):
         import test.options as options
         options.nwords = 20000
-        fname = 'test/review_100_tok.json'
+        fname = 'test/review100_tok.json'
         # test that the script runs 
         counter = process_file(fname, options)
         voc = Vocabulary(counter, n_most_common=options.nwords)

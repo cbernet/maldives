@@ -3,7 +3,7 @@
 
 from multiprocessing import Pool
 
-def run(func, fnames, nprocesses=None, options):
+def run(func, fnames, nprocesses=None, *args):
     '''Run function func for each file name in fnames.
     nprocesses defines the number of parallel processes.
     returns the list of results obtained for each file name.
@@ -17,7 +17,7 @@ def run(func, fnames, nprocesses=None, options):
         with Pool(processes=nprocesses) as pool:
             tmp = []
             for fname in fnames: 
-                tmp.append( pool.apply_async(func, [fname, options]) )
+                tmp.append( pool.apply_async(func, [fname, *args]) )
             for res in tmp: 
                 print('getting result')
                 results.append(res.get(timeout=timeout))
