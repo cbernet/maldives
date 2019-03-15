@@ -32,7 +32,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># the usual stuff: </span>
@@ -85,7 +85,14 @@
 "stars":1.0,"useful":6,"funny":1,"cool":0,
 "text":"Total bill for this horrible service? Over $8Gs. These crooks actually had the nerve to charge us $69 for 3 pills. I checked online the pills can be had for 19 cents EACH! Avoid Hospital ERs at all costs.","date":"2013-05-07 04:34:36"}</code></pre>
 <p>This file needs to be preprocessed for machine learning. Indeed, to feed the review text to a neural network, we need to convert it to an array of numbers in some way, a task called encoding.</p>
-<p>Please follow <a href="https://thedatafrog.com/text-preprocessing-machine-learning-yelp/">this tutorial</a> to do the preprocessing yourself.</p>
+<p>You can follow <a href="https://thedatafrog.com/text-preprocessing-machine-learning-yelp/">this tutorial</a> to see how to download the dataset and to do the preprocessing yourself.</p>
+<p>Alternatively, you can obtain the necessary files <a href="https://drive.google.com/open?id=1CWG2D-I_7vyuhq6EqmnzhmG0e8IUTMl4">here</a>:</p>
+<ul>
+<li><code>data.h5</code> contains the dataset. It's basically a large numpy array</li>
+<li><code>index.pck</code> contains the vocabulary, which will be used to convert the numbers representing the words back into text in case we want to investigate our data. </li>
+</ul>
+<p>I'm sorry, but at the moment, I do not know how to access these files directly from Google Colab. So if you want to run there, you will need to first download the files locally, and then to <a href="https://colab.research.google.com/notebooks/io.ipynb">upload them to Google Colab</a> (just add a cell to this notebook to do that). This means the files will be transferred twice.</p>
+<p>If you run on your own machine, you should put these files in the same directory as the <code>yelp_simplenet.ipynb</code> notebook.</p>
 
 </div>
 </div>
@@ -101,12 +108,12 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
-<span class="n">datadir</span> <span class="o">=</span> <span class="s1">&#39;/data2/cbernet/maldives/yelp_dataset/&#39;</span>
-<span class="c1"># datadir = &#39;./&#39;</span>
+<span class="c1"># datadir = &#39;/data2/cbernet/maldives/yelp_dataset/&#39;</span>
+<span class="n">datadir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
 <span class="n">datafile</span> <span class="o">=</span> <span class="n">datadir</span><span class="o">+</span><span class="s1">&#39;data.h5&#39;</span>
 <span class="n">h5</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
 <span class="n">h5</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -122,7 +129,7 @@
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[22]:</div>
+<div class="prompt output_prompt">Out[3]:</div>
 
 
 
