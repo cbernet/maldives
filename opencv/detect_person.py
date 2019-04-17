@@ -1,9 +1,5 @@
 # import the necessary packages
-from __future__ import print_function
-from imutils.object_detection import non_max_suppression
-from imutils import paths
 import numpy as np
-import imutils
 import cv2
  
 # initialize the HOG descriptor/person detector
@@ -12,29 +8,28 @@ hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 cv2.startWindowThread()
 cap = cv2.VideoCapture(0)
+width = cap.get(cv2.CAP_PROP_FRAME_WIDTH )
+height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT )
+
+scale = 2
 
 while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
-    
-    frame = cv2.resize(frame,(640,360)) # Downscale to improve frame rate
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+
+    # scaling the picture down for faster detection
+    small = cv2.resize(frame, (int(width/scale), int(height/scale))) 
 
     # detect people in the image
-    (rects, weights) = hog.detectMultiScale(
-        gray_frame,
-        winStride=(8, 8),
-        padding=(32, 32),
-        scale=1.05
-        )
-    # draw the original bounding boxes
-    # for (x, y, w, h) in rects:
-    #    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    # returns the bounding boxes for the detected objects
+    boxes, weights = hog.detectMultiScale( small, winStride=(8,8) )
 
-    rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-    pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
-    for (xA, yA, xB, yB) in pick:
-        cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
+    boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
+
+    for (xA, yA, xB, yB) in boxes:
+        # display the detected boxes in the original picture
+        cv2.rectangle(frame, (xA*scale, yA*scale), (xB*scale, yB*scale),
+                          (0, 255, 0), 2)
     
     # Display the resulting frame
     cv2.imshow('frame',frame)
