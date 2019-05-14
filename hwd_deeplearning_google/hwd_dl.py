@@ -46,5 +46,6 @@ model.compile(loss='categorical_crossentropy',
 history = model.fit(kx_train, y_train, validation_data=(kx_test,y_test),
                     batch_size=200, epochs=40)
 
+model.save('model.h5')
 
 
