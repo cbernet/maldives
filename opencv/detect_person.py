@@ -4,7 +4,7 @@ import cv2
 from framecounter import FrameCounter
 
 do_write = False
-do_display = False
+do_display = True
 do_detection = True
 # open webcam video stream
 # cap = cv2.VideoCapture(0)
