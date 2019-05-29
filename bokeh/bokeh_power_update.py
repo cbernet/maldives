@@ -34,6 +34,7 @@ preprocess_df(df)
 
 source = ColumnDataSource(df)
 
+# history plot 
 hover = HoverTool(
         tooltips=[
             ("x", "$x"),
@@ -47,6 +48,16 @@ p1.line(x='dt', y='power', source=source)
 p1.xaxis.axis_label='Time'
 p1.yaxis.axis_label='Power (kW)'
 
+# gauges 
+channels = ['Main', 'Pool', 'Heater']
+gauge_source = [df.tail(1)['power'], 0., 0.]
+print(gauge_source)
+p2 = figure(x_range=channels, plot_height=250, title='Current power')
+p2.vbar(top=gauge_source,
+        x=channels,
+        width=0.9)
+p2.yaxis.axis_label='Power (kW)'
+
 def update():
     global last_id
     cursor = power.find({'_id':{'$gt':last_id}})
@@ -58,5 +69,6 @@ def update():
         preprocess_df(df)
         source.stream(df)
 
+layout = column(p2)
 curdoc().add_root(p1)
 curdoc().add_periodic_callback(update, 1000)
