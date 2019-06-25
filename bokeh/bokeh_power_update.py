@@ -22,7 +22,7 @@ client = pymongo.MongoClient('rasphome.lan',27017)
 db = client.sensors
 power = db.home_power_0
 
-nhours = 2
+nhours = 72
 now = datetime.now()
 t1 = now - timedelta(hours=nhours)
 tt1 = datetime.timestamp(t1)*1000
