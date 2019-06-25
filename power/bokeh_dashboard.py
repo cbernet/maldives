@@ -11,11 +11,7 @@ import pymongo
 import math
 import sys
 
-def preprocess_df(df):
-    del df['_id']
-    df['timeparis'] = df['time'] + 3600*2
-    df['dt'] = pd.to_datetime(df['timeparis'],unit='s')
-    df['power'] = df['rms'] * 237 * 0.27 / 1000.
+from preprocess import preprocess
 
 client = pymongo.MongoClient('localhost',27017)
 mydb = client['power']
@@ -32,7 +28,7 @@ df = pd.DataFrame(data)
 # print(df.head)
 # sys.exit(1)
 
-preprocess_df(df)
+preprocess(df)
 
 source = ColumnDataSource(df)
 
