@@ -65,7 +65,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">whello</span> <span class="o">=</span> <span class="n">make_sure</span><span class="p">(</span><span class="n">hello</span><span class="p">)</span>
@@ -86,8 +86,7 @@
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>are you sure you want to greet the world? [y/n]x
-are you sure you want to greet the world? [y/n]y
+<pre>are you sure you want to greet the world? [y/n]y
 Hello world
 </pre>
 </div>
@@ -108,7 +107,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@make_sure</span>
@@ -226,7 +225,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">std</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -242,13 +241,13 @@ Hello world
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[5]:</div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>1.0002721249047584</pre>
+<pre>0.9998272967173739</pre>
 </div>
 
 </div>
@@ -282,7 +281,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">c_std</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -298,13 +297,13 @@ Hello world
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[16]:</div>
+    <div class="prompt output_prompt">Out[9]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>1.0002721249047584</pre>
+<pre>0.9998272967173739</pre>
 </div>
 
 </div>
@@ -324,7 +323,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> std(a)
@@ -344,7 +343,7 @@ Hello world
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>1 loop, best of 3: 4.61 s per loop
+<pre>1 loop, best of 3: 4.62 s per loop
 </pre>
 </div>
 </div>
@@ -355,7 +354,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> c_std(a)
@@ -375,7 +374,7 @@ Hello world
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>10 loops, best of 3: 31 ms per loop
+<pre>10 loops, best of 3: 31.6 ms per loop
 </pre>
 </div>
 </div>
@@ -395,7 +394,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
@@ -411,13 +410,13 @@ Hello world
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[19]:</div>
+    <div class="prompt output_prompt">Out[12]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>1.000272124904807</pre>
+<pre>0.9998272967174134</pre>
 </div>
 
 </div>
@@ -428,7 +427,7 @@ Hello world
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> a.std()
@@ -512,12 +511,12 @@ $$\pi = 4 r$$<p>So if we can estimate this ratio, we can estimate pi!</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">npoints</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">10e6</span><span class="p">)]</span>
-<span class="k">for</span> <span class="n">np</span> <span class="ow">in</span> <span class="n">npoints</span><span class="p">:</span>
-  <span class="nb">print</span><span class="p">(</span><span class="n">pi</span><span class="p">(</span><span class="n">np</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">npoints</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="n">pi</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -534,10 +533,10 @@ $$\pi = 4 r$$<p>So if we can estimate this ratio, we can estimate pi!</p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>4.0
-3.12
-3.134
-3.1414608
+<pre>3.2
+3.04
+3.1472
+3.1414724
 </pre>
 </div>
 </div>
@@ -557,7 +556,7 @@ $$\delta = 1/ \sqrt{N}$$<p>Here is how the uncertainty evolves with the number o
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -565,7 +564,7 @@ $$\delta = 1/ \sqrt{N}$$<p>Here is how the uncertainty evolves with the number o
 <span class="c1"># with a lambda construct</span>
 <span class="n">uncertainty</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">npoints</span><span class="p">:</span>
-  <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;npoints&#39;</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="s1">&#39;delta:&#39;</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">(</span><span class="n">np</span><span class="p">))</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;npoints&#39;</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="s1">&#39;delta:&#39;</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -582,9 +581,9 @@ $$\delta = 1/ \sqrt{N}$$<p>Here is how the uncertainty evolves with the number o
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>npoints 10 delta: 0.00031622776601683794
-npoints 100 delta: 0.00031622776601683794
-npoints 10000 delta: 0.00031622776601683794
+<pre>npoints 10 delta: 0.31622776601683794
+npoints 100 delta: 0.1
+npoints 10000 delta: 0.01
 npoints 10000000 delta: 0.00031622776601683794
 </pre>
 </div>
@@ -604,7 +603,7 @@ npoints 10000000 delta: 0.00031622776601683794
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> pi(10000000)
@@ -624,7 +623,7 @@ npoints 10000000 delta: 0.00031622776601683794
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>1 loop, best of 3: 3.44 s per loop
+<pre>1 loop, best of 3: 3.49 s per loop
 </pre>
 </div>
 </div>
@@ -664,7 +663,7 @@ npoints 10000000 delta: 0.00031622776601683794
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">fast_pi</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e9</span><span class="p">)</span> <span class="p">)</span>
@@ -680,13 +679,13 @@ npoints 10000000 delta: 0.00031622776601683794
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[29]:</div>
+    <div class="prompt output_prompt">Out[23]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>3.141593964</pre>
+<pre>3.141527256</pre>
 </div>
 
 </div>
@@ -780,7 +779,7 @@ So there is no need to check this combination twice. Also, the distance between 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
@@ -802,31 +801,31 @@ So there is no need to check this combination twice. Also, the distance between 
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[[-0.74787074  0.42374652]
- [ 0.59702777 -0.66681074]
- [-0.16085526  0.25792106]
- [-0.34471094  0.52269362]
- [ 0.98131221  0.11667299]
- [ 0.0846384   0.82585723]
- [-0.2631859   0.91649487]
- [ 0.4878855   0.54838633]
- [-0.81331536 -0.97375128]
- [ 0.16366883 -0.91968595]]
+<pre>[[-0.21489559  0.2758845 ]
+ [ 0.46014884  0.22870144]
+ [-0.0188096   0.77782864]
+ [-0.69480477  0.0058198 ]
+ [-0.41380634 -0.45217708]
+ [-0.66116743 -0.37505363]
+ [-0.60690115  0.97901302]
+ [-0.22480242 -0.64687904]
+ [-0.80867721 -0.04126105]
+ [-0.03447232 -0.51784939]]
 </pre>
 </div>
 </div>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[34]:</div>
+    <div class="prompt output_prompt">Out[25]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(array([-0.16085526,  0.25792106]),
- array([-0.34471094,  0.52269362]),
- 0.3223467347543504)</pre>
+<pre>(array([-0.69480477,  0.0058198 ]),
+ array([-0.80867721, -0.04126105]),
+ 0.12322150643489199)</pre>
 </div>
 
 </div>
@@ -845,7 +844,7 @@ So there is no need to check this combination twice. Also, the distance between 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> closest(points)
@@ -865,7 +864,7 @@ So there is no need to check this combination twice. Also, the distance between 
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>10000 loops, best of 3: 78.8 µs per loop
+<pre>10000 loops, best of 3: 76.8 µs per loop
 </pre>
 </div>
 </div>
@@ -884,7 +883,7 @@ So there is no need to check this combination twice. Also, the distance between 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
@@ -901,15 +900,15 @@ So there is no need to check this combination twice. Also, the distance between 
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[36]:</div>
+    <div class="prompt output_prompt">Out[27]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(array([-0.70101257,  0.10607647]),
- array([-0.70173379,  0.10517693]),
- 0.0011529683025505936)</pre>
+<pre>(array([-0.9197511 ,  0.43622966]),
+ array([-0.91919405,  0.43550372]),
+ 0.0009150308173721398)</pre>
 </div>
 
 </div>
@@ -920,7 +919,7 @@ So there is no need to check this combination twice. Also, the distance between 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> closest(points)
@@ -940,7 +939,7 @@ So there is no need to check this combination twice. Also, the distance between 
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>1 loop, best of 3: 2.98 s per loop
+<pre>1 loop, best of 3: 2.86 s per loop
 </pre>
 </div>
 </div>
@@ -953,7 +952,7 @@ So there is no need to check this combination twice. Also, the distance between 
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Since our algorithm is O(NxN), if we go from 10 to 2,000 points, the algorithm will be 200x200 = 40,000 times slower.</p>
-<p>And this is what we have measured: 2.97 / 78e-6 = 38,000</p>
+<p>And this is what we have measured: 2.97 / 78e-6 = 38,000 (the exact numbers may vary).</p>
 <p>Now let's try and speed this up with numba's just in time compilation:</p>
 
 </div>
@@ -961,7 +960,7 @@ So there is no need to check this combination twice. Also, the distance between 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">c_closest</span> <span class="o">=</span> <span class="n">njit</span><span class="p">(</span><span class="n">closest</span><span class="p">)</span>
@@ -990,11 +989,11 @@ So there is no need to check this combination twice. Also, the distance between 
 The above exception was the direct cause of the following exception:
 
 <span class="ansi-red-fg">SystemError</span>                               Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-38-a3b4fe54a342&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">&lt;ipython-input-29-a3b4fe54a342&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
 <span class="ansi-green-intense-fg ansi-bold">      1</span> c_closest <span class="ansi-blue-fg">=</span> njit<span class="ansi-blue-fg">(</span>closest<span class="ansi-blue-fg">)</span>
 <span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>c_closest<span class="ansi-blue-fg">(</span>points<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">SystemError</span>: CPUDispatcher(&lt;function closest at 0x7feeb8134598&gt;) returned a result with an error set</pre>
+<span class="ansi-red-fg">SystemError</span>: CPUDispatcher(&lt;function closest at 0x7f2389a4e400&gt;) returned a result with an error set</pre>
 </div>
 </div>
 
@@ -1049,7 +1048,7 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">c_closest</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
@@ -1065,15 +1064,15 @@ The above exception was the direct cause of the following exception:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[42]:</div>
+    <div class="prompt output_prompt">Out[31]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(array([-0.70101257,  0.10607647]),
- array([-0.70173379,  0.10517693]),
- 0.0011529683025505936)</pre>
+<pre>(array([-0.9197511 ,  0.43622966]),
+ array([-0.91919405,  0.43550372]),
+ 0.0009150308173721398)</pre>
 </div>
 
 </div>
@@ -1084,7 +1083,7 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[43]:</div>
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> closest(points)
@@ -1104,7 +1103,7 @@ The above exception was the direct cause of the following exception:
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>1 loop, best of 3: 2.87 s per loop
+<pre>1 loop, best of 3: 2.92 s per loop
 </pre>
 </div>
 </div>
@@ -1115,7 +1114,7 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> c_closest(points)
@@ -1135,7 +1134,7 @@ The above exception was the direct cause of the following exception:
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>10 loops, best of 3: 34.4 ms per loop
+<pre>10 loops, best of 3: 37.1 ms per loop
 </pre>
 </div>
 </div>
