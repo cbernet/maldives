@@ -1,7 +1,6 @@
 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h2><p><strong>Sentiment analysis</strong> is an important application of natural language processing, as it makes it possible to predict what a person thinks given the text she has written.</p>
 <p>For example, let's say you own a company and you would like to monitor the opinion of your customers on twitter. It's fairly easy to detect the tweets in which your company or products is mentioned, and to find out how many times these tweets are liked or retweeted.</p>
@@ -51,7 +50,7 @@
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;KMP_DUPLICATE_LIB_OK&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;True&#39;</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -61,7 +60,7 @@
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stderr output_text">
@@ -75,8 +74,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="The-dataset">The dataset<a class="anchor-link" href="#The-dataset">&#182;</a></h2><p>The reviews of the <a href="https://www.yelp.com/dataset">yelp dataset</a> come as a very large JSON lines file containing the reviews in plain text, together with the corresponding rating and some more information. The reviews look like this:</p>
 
@@ -86,7 +84,7 @@
 "text":"Total bill for this horrible service? Over $8Gs. These crooks actually had the nerve to charge us $69 for 3 pills. I checked online the pills can be had for 19 cents EACH! Avoid Hospital ERs at all costs.","date":"2013-05-07 04:34:36"}</code></pre>
 <p>This file needs to be preprocessed for machine learning. Indeed, to feed the review text to a neural network, we need to convert it to an array of numbers in some way, a task called encoding.</p>
 <p>You can follow <a href="https://thedatafrog.com/text-preprocessing-machine-learning-yelp/">this tutorial</a> to see how to download the dataset and to do the preprocessing yourself.</p>
-<p>Alternatively, you can obtain the necessary files <a href="https://drive.google.com/open?id=1CWG2D-I_7vyuhq6EqmnzhmG0e8IUTMl4">here</a>:</p>
+<p>Alternatively, you can obtain the necessary files <a href="https://drive.google.com/open?id=1mIcl7ubm60LfbhV59btIlsAn7DuV2-PB">here</a>:</p>
 <ul>
 <li><code>data.h5</code> contains the dataset. It's basically a large numpy array</li>
 <li><code>index.pck</code> contains the vocabulary, which will be used to convert the numbers representing the words back into text in case we want to investigate our data. </li>
@@ -98,8 +96,7 @@
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Now let's open our dataset file. This is an hdf5 file, so we use the h5py package to open it.</p>
 
@@ -108,7 +105,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span>
@@ -119,7 +116,7 @@
 <span class="n">h5</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -129,7 +126,7 @@
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[3]:</div>
+    <div class="prompt output_prompt">Out[6]:</div>
 
 
 
@@ -145,8 +142,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We can use the dataset already as a numpy array. h5py will load in memory only the the data you need to complete a given operation. For example, here is the shape of the array:</p>
 
@@ -155,14 +151,14 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">h5</span><span class="p">[</span><span class="s1">&#39;reviews&#39;</span><span class="p">]</span>
 <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -172,7 +168,7 @@
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[23]:</div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
 
@@ -188,8 +184,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>and let's check the first line:</p>
 
@@ -198,13 +193,13 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -214,7 +209,7 @@
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[24]:</div>
+    <div class="prompt output_prompt">Out[8]:</div>
 
 
 
@@ -258,8 +253,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>At preprocessing stage, when I created this array, I decided to reserve the first four slots on each line for:</p>
 <ul>
@@ -277,7 +271,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># load the vocabulary object from index.pck</span>
@@ -292,7 +286,7 @@
 <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">vocab</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">first_review</span><span class="p">)</span> <span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -302,7 +296,7 @@
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[25]:</div>
+    <div class="prompt output_prompt">Out[9]:</div>
 
 
 
@@ -318,8 +312,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Let's extract the information needed to train our neural networks.</p>
 
@@ -328,7 +321,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># the reviews</span>
@@ -342,14 +335,13 @@
 <span class="n">funny</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Our goal is to predict whether the review text is positive or negative. Therefore, we need to label our examples in two categories: 0 (negative) and 1 (positive). We can use the number of stars to define these categories. For example, we could say that a review with 3 stars or more is positive.</p>
 <p>First, let's check the distribution of stars:</p>
@@ -359,13 +351,13 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">stars</span><span class="p">[:</span><span class="mi">1000</span><span class="p">],</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -375,7 +367,7 @@
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[12]:</div>
+    <div class="prompt output_prompt">Out[11]:</div>
 
 
 
@@ -390,7 +382,7 @@
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -408,8 +400,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Please note that the number of stars ranges from 1 to 5, so it's not possible for a reviewer to give no star.</p>
 <p>Then, we want to split the dataset in two categories that have roughly the same number of examples.</p>
@@ -421,7 +412,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># first fill an array with zeros, </span>
@@ -433,7 +424,7 @@
 <span class="nb">print</span><span class="p">(</span><span class="n">stars</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">stars</span><span class="p">))</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -443,7 +434,7 @@
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -458,8 +449,7 @@
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>As usual, we split the dataset into a training and a test sample. At first, we will use 20000 examples for the test sample, and "only" 100,000 examples for the training sample:</p>
 
@@ -468,7 +458,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">n_test</span> <span class="o">=</span> <span class="mi">20000</span>
@@ -479,14 +469,13 @@
 <span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">n_test</span><span class="p">:</span><span class="n">n_train</span><span class="o">+</span><span class="n">n_test</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Sentiment-analysis-with-a-simple-dense-network">Sentiment analysis with a simple dense network<a class="anchor-link" href="#Sentiment-analysis-with-a-simple-dense-network">&#182;</a></h2><p>Our first deep neural network will contain:</p>
 <ul>
@@ -510,20 +499,19 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The first layer will be the embedding layer. Its role is to convert each integer representing a word into a vector in N-dimensional space. In this space, words with similar meaning will be grouped together.</p>
 <p>Following the <a href="https://keras.io/layers/embeddings/">keras documentation</a>, we indicate the number of possible words, the dimension of the embedding space, and the maximum size of the text.</p>
@@ -535,7 +523,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">review_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_train</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -543,14 +531,13 @@
                                  <span class="n">input_length</span><span class="o">=</span><span class="n">review_length</span><span class="p">))</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The output of the embedding is multidimensional. Indeed, we start with a 1D array with 250 words. Since embedding gives us a two-dimensional vector for each word, the embedding layer spits out an array of shape (250, 2). This 2D array cannot be used directly as input to a dense layer, so we need to flatten it into a 1D array with 500 slots. This is done by the Flatten layer:</p>
 
@@ -559,20 +546,19 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">())</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Then, we add dropout regularization. In a nutshell, the dropout regularization layer drops, on a random basis, a fraction of its input values. This forces the network to learn different paths to solve the problem, and helps reduce <a href="https://thedatafrog.com/overfitting-illustrated/">overfitting</a>. If you want to know a bit more about dropout regularization, <a href="https://thedatafrog.com/deep-learning-keras/#Dropout-layers">check this out</a>.</p>
 <p>Here we decide to drop 40% of the values from the Flatten layer:</p>
@@ -582,22 +568,42 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.4</span><span class="p">))</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>After that, we can add a dense layer, which will analyze the results of the embedding. Again, we start small, with only 5 neurons. We will see later if performance can be improved by increasing the number of neurons.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And finally, we end with a dense layer consisting of a single neuron with a <a href="https://thedatafrog.com/logistic-regression/">sigmoid activation function</a>. Therefore, this neuron will produce a value between 0 and 1, which is the estimated probability for the example review to be positive.</p>
 
 </div>
 </div>
@@ -607,19 +613,18 @@
 <div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">))</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>And finally, we end with a dense layer consisting of a single neuron with a <a href="https://thedatafrog.com/logistic-regression/">sigmoid activation function</a>. Therefore, this neuron will produce a value between 0 and 1, which is the estimated probability for the example review to be positive.</p>
+<p>We can now compile and print the full model:</p>
 
 </div>
 </div>
@@ -629,28 +634,6 @@
 <div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We can now compile and print the full model:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[21]:</div>
-<div class="inner_cell">
-    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span>
               <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span>
               <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
@@ -658,7 +641,7 @@
 <span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -668,7 +651,7 @@
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -698,8 +681,7 @@ _________________________________________________________________
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We fit the model on the training dataset:</p>
 
@@ -708,7 +690,7 @@ _________________________________________________________________
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span>
@@ -719,7 +701,7 @@ _________________________________________________________________
                     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -729,31 +711,31 @@ _________________________________________________________________
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Train on 100000 samples, validate on 20000 samples
 Epoch 1/10
-100000/100000 [==============================] - 2s 19us/step - loss: 0.6192 - acc: 0.6719 - val_loss: 0.5587 - val_acc: 0.7277
+100000/100000 [==============================] - 8s 79us/step - loss: 0.6192 - acc: 0.6719 - val_loss: 0.5592 - val_acc: 0.7271
 Epoch 2/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.4583 - acc: 0.7895 - val_loss: 0.3563 - val_acc: 0.8553
+100000/100000 [==============================] - 7s 67us/step - loss: 0.4592 - acc: 0.7890 - val_loss: 0.3570 - val_acc: 0.8552
 Epoch 3/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.3293 - acc: 0.8630 - val_loss: 0.2885 - val_acc: 0.8852
+100000/100000 [==============================] - 7s 67us/step - loss: 0.3297 - acc: 0.8627 - val_loss: 0.2888 - val_acc: 0.8851
 Epoch 4/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2864 - acc: 0.8851 - val_loss: 0.2646 - val_acc: 0.9004
+100000/100000 [==============================] - 7s 67us/step - loss: 0.2865 - acc: 0.8851 - val_loss: 0.2647 - val_acc: 0.9003
 Epoch 5/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2661 - acc: 0.8929 - val_loss: 0.2549 - val_acc: 0.9004
+100000/100000 [==============================] - 7s 67us/step - loss: 0.2662 - acc: 0.8928 - val_loss: 0.2549 - val_acc: 0.9004
 Epoch 6/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2556 - acc: 0.8977 - val_loss: 0.2500 - val_acc: 0.9020
+100000/100000 [==============================] - 7s 73us/step - loss: 0.2557 - acc: 0.8976 - val_loss: 0.2500 - val_acc: 0.9020
 Epoch 7/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2464 - acc: 0.9027 - val_loss: 0.2510 - val_acc: 0.9054
+100000/100000 [==============================] - 8s 80us/step - loss: 0.2464 - acc: 0.9026 - val_loss: 0.2510 - val_acc: 0.9054
 Epoch 8/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2401 - acc: 0.9049 - val_loss: 0.2463 - val_acc: 0.9073
+100000/100000 [==============================] - 7s 69us/step - loss: 0.2402 - acc: 0.9049 - val_loss: 0.2463 - val_acc: 0.9073
 Epoch 9/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2347 - acc: 0.9069 - val_loss: 0.2470 - val_acc: 0.9067
+100000/100000 [==============================] - 7s 69us/step - loss: 0.2347 - acc: 0.9069 - val_loss: 0.2470 - val_acc: 0.9067
 Epoch 10/10
-100000/100000 [==============================] - 1s 7us/step - loss: 0.2302 - acc: 0.9084 - val_loss: 0.2477 - val_acc: 0.9044
+100000/100000 [==============================] - 7s 70us/step - loss: 0.2302 - acc: 0.9084 - val_loss: 0.2477 - val_acc: 0.9044
 </pre>
 </div>
 </div>
@@ -763,8 +745,7 @@ Epoch 10/10
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We see that we end up with a validation accuracy of about 90%. To have a look at the performance in more details, we will use the following function:</p>
 
@@ -793,7 +774,7 @@ Epoch 10/10
 <span class="n">plot_accuracy</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">miny</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -803,7 +784,7 @@ Epoch 10/10
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -818,7 +799,7 @@ Epoch 10/10
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -834,8 +815,7 @@ Epoch 10/10
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The training accuracy plateaus at 90%, so training further will not help much.</p>
 <p>What we see here is that this network underfits the data, meaning that architecture is not complex enough to fit the data. By making it more complex, the training and testing accuracies can certainly be improved. A visual illustration of underfitting is shown <a href="https://thedatafrog.com/overfitting-illustrated/#So-why-do-we-need-complex-networks-then?">here</a>.</p>
@@ -881,7 +861,7 @@ Epoch 10/10
                     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -891,7 +871,7 @@ Epoch 10/10
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -939,7 +919,7 @@ Epoch 3/3
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plot_accuracy</span><span class="p">(</span><span class="n">history</span><span class="p">,</span><span class="n">miny</span><span class="o">=</span><span class="mf">0.85</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -949,7 +929,7 @@ Epoch 3/3
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -964,7 +944,7 @@ Epoch 3/3
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -980,8 +960,7 @@ Epoch 3/3
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>That's an improvement over the previous attempt, but the training is quite long, and it seems we will not be able to reach 93% classification accuracy on the test sample with this technique. In the next section we try a different strategy.</p>
 <h2 id="Sentiment-analysis-with-a-convolutional-network">Sentiment analysis with a convolutional network<a class="anchor-link" href="#Sentiment-analysis-with-a-convolutional-network">&#182;</a></h2><p>We introduced convolutional layers when we tuned a <a href="https://thedatafrog.com/deep-learning-keras/">deep convolutional network for image recognition</a>.</p>
@@ -1044,7 +1023,7 @@ Epoch 3/3
                     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1054,7 +1033,7 @@ Epoch 3/3
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -1100,7 +1079,7 @@ Epoch 3/3
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plot_accuracy</span><span class="p">(</span><span class="n">history</span><span class="p">,</span><span class="n">miny</span><span class="o">=</span><span class="mf">0.85</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1110,7 +1089,7 @@ Epoch 3/3
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -1125,7 +1104,7 @@ Epoch 3/3
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -1141,8 +1120,7 @@ Epoch 3/3
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>With the convolutional layer, we get the same performance as with our best try with a simple dense network. However, please note that:</p>
 <ul>
@@ -1155,8 +1133,7 @@ Epoch 3/3
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Stacked-convolutional-layers">Stacked convolutional layers<a class="anchor-link" href="#Stacked-convolutional-layers">&#182;</a></h2><p>In this section, we will optimize our convolutional network further by stacking convolutional layers.</p>
 <p>As we have done in <a href="https://thedatafrog.com/deep-learning-keras/">Tuning a deep convolutional network for image recognition</a>, we perform <strong>max pooling</strong> between each convolutional layer, and the layers extract more and more features as we progress in the network.</p>
@@ -1207,7 +1184,7 @@ Epoch 3/3
                     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1217,7 +1194,7 @@ Epoch 3/3
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -1273,7 +1250,7 @@ Epoch 4/4
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plot_accuracy</span><span class="p">(</span><span class="n">history</span><span class="p">,</span><span class="n">miny</span><span class="o">=</span><span class="mf">0.85</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1283,7 +1260,7 @@ Epoch 4/4
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -1298,7 +1275,7 @@ Epoch 4/4
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 
@@ -1314,8 +1291,7 @@ Epoch 4/4
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Nice! 93.7% accuracy, and only a tiny bit of overfitting. There is probably some room for optimization, so please let us know in the comments if you manage to do better with convolutional layers.</p>
 
@@ -1323,8 +1299,7 @@ Epoch 4/4
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Investigating-the-misclassified-reviews">Investigating the misclassified reviews<a class="anchor-link" href="#Investigating-the-misclassified-reviews">&#182;</a></h2><p>It's always interesting to look at misclassified examples to get a hint of what's going on and maybe get ideas for further improvements. That's what we're going to do now, with the first 100 examples.</p>
 <p>Here are the predictions and the true labels for these samples:</p>
@@ -1347,7 +1322,7 @@ Epoch 4/4
 <span class="nb">print</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1357,7 +1332,7 @@ Epoch 4/4
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -1374,8 +1349,7 @@ predictions:
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Now, we select the misclassified examples, together with the true label and the prediction for these examples:</p>
 
@@ -1393,14 +1367,13 @@ predictions:
 <span class="n">miscl_true</span> <span class="o">=</span> <span class="n">y_sample</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>And we print the first five:</p>
 
@@ -1419,7 +1392,7 @@ predictions:
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1429,7 +1402,7 @@ predictions:
 
 <div class="output_area">
 
-<div class="prompt"></div>
+    <div class="prompt"></div>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
@@ -1462,8 +1435,7 @@ this not review as such hope try this place on next visit vegas but question ope
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>It's not too easy to understand the reviews with all the missing words, especially the stop words like "the", "I", "a", etc. Still, let's try.</p>
 <ul>
@@ -1494,7 +1466,7 @@ this not review as such hope try this place on next visit vegas but question ope
 <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;misc&#39;</span><span class="p">]</span><span class="o">==</span><span class="kc">True</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1504,7 +1476,7 @@ this not review as such hope try this place on next visit vegas but question ope
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[35]:</div>
+    <div class="prompt output_prompt">Out[35]:</div>
 
 
 
@@ -1595,8 +1567,7 @@ this not review as such hope try this place on next visit vegas but question ope
 
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We don't learn much, only that these reviews are indeed borderline: they have 3 or 4 stars, and we set the boundary between our negative and positive categories between 3 and 4 stars.</p>
 
@@ -1604,8 +1575,7 @@ this not review as such hope try this place on next visit vegas but question ope
 </div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
+</div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We're done. Now let's <a href="https://thedatafrog.com/sentiment-analysis-convolutional-network#wrapup">go back and wrap up!</a></p>
 
