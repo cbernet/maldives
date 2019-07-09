@@ -1,0 +1,2262 @@
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Numba-+-CUDA-on-Google-Colab">Numba + CUDA on Google Colab<a class="anchor-link" href="#Numba-+-CUDA-on-Google-Colab">&#182;</a></h2><p>By default, Google Colab is not able to run numba + CUDA, because two lilbraries are not found, <code>libdevice</code> and <code>libnvvm.so</code>. So we need to make sure that these libraries are found in the notebook.</p>
+<p>First, we look for these libraries on the system. To do that, we simply run the <code>find</code> command, to recursively look for these libraries starting at the root of the filesystem. The exclamation mark escapes the line so that it's executed by the Linux shell, and not by the jupyter notebook.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>find / -iname <span class="s1">&#39;libdevice&#39;</span>
+<span class="o">!</span>find / -iname <span class="s1">&#39;libnvvm.so&#39;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>/usr/local/cuda-10.0/nvvm/libdevice
+/usr/local/cuda-10.0/nvvm/lib64/libnvvm.so
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then, we add the two libraries to numba environment variables:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;NUMBAPRO_LIBDEVICE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/usr/local/cuda-10.0/nvvm/libdevice&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;NUMBAPRO_NVVM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/usr/local/cuda-10.0/nvvm/lib64/libnvvm.so&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And we're done! Now let's get started.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="A-gentle-introduction-to-ufuncs">A gentle introduction to ufuncs<a class="anchor-link" href="#A-gentle-introduction-to-ufuncs">&#182;</a></h2><p>Numpy universal functions or ufuncs are functions that operate on a numpy array in an element-by-element fashion. For example, when we take the square of a numpy array, a ufunc computes the square of each element before returning the resulting array:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([ 0,  1,  4,  9, 16, 25, 36, 49, 64, 81])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Most math functions (if not all) are available as ufuncs in numpy. For example, to exponentiate all elements in a numpy array:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([1.00000000e+00, 2.71828183e+00, 7.38905610e+00, 2.00855369e+01,
+       5.45981500e+01, 1.48413159e+02, 4.03428793e+02, 1.09663316e+03,
+       2.98095799e+03, 8.10308393e+03])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Most ufuncs are implemented in compiled C code, so they are already quite fast, and much faster than plain python. For example, let's consider a large array, and let's compute the logarithm of each element, both in plain python and in numpy:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e6</span><span class="p">))</span>
+<span class="o">%</span><span class="k">timeit</span> np.sqrt(x)
+<span class="o">%</span><span class="k">timeit</span> [math.sqrt(xx) for xx in x]
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>100 loops, best of 3: 2.73 ms per loop
+10 loops, best of 3: 178 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We see that the numpy ufunc is about 50 times faster. Still, in the ufunc, the calculation is not parallelized: the square root is computed sequentially on the CPU for each element in the array.</p>
+<p>The GPU, contrary to the CPU, is able to perform a large number of operations simultaneously. In the following, we will see how to create and compile ufuncs for the GPU to perform the calculation on many elements at the same time.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="A-very-simple-example-:-parallel-square-root-calculation-on-the-GPU">A very simple example : parallel square root calculation on the GPU<a class="anchor-link" href="#A-very-simple-example-:-parallel-square-root-calculation-on-the-GPU">&#182;</a></h2><p>Our first ufunc for the GPU will again compute the square root for a large number of points.</p>
+<p>We start by building a sample of points ranging from 0 to 10 millions. GPUs are more efficient with numbers that are encoded on a small number of bits. And often, a very high precision is not needed. So we create a sample of <code>float32</code> numbers (the default being <code>float64</code>):</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">npoints</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e7</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npoints</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>With numba, we can create ufuncs <strong>compiled for the CPU</strong> using the vectorize decorator. Let's start by doing this:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">vectorize</span> 
+
+<span class="nd">@vectorize</span>
+<span class="k">def</span> <span class="nf">cpu_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">cpu_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([  0.        ,   1.        ,   1.41421356, ..., 999.9985    ,
+       999.999     , 999.9995    ])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Creating a ufunc <strong>for the GPU</strong> is almost as straightforward:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">vectorize</span>
+
+<span class="nd">@vectorize</span><span class="p">([</span><span class="s1">&#39;float32(float32)&#39;</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+   
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">gpu_sqrt</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([0.0000000e+00, 1.0000000e+00, 1.4142135e+00, ..., 3.1622771e+03,
+       3.1622773e+03, 3.1622776e+03], dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It is important to note that, contrary to the CPU case, the input and return types of the function have to be specified, when compiling for the GPU. In the string:</p>
+
+<pre><code>'float32(float32)'</code></pre>
+<p>The first <code>float32</code> corresponds to the return type, and the second one to the input type. You can think of it as: the returned value is a function of the input value. Also, please note that these types need to be adapted to your data. In the case above, we have created an array of <code>float32</code> values, so we are fine.</p>
+<p><strong>Exercise:</strong> Edit the type definition in the vectorize decorator to read <code>float64</code>, and see what happens when you call the function. Then change it back to <code>float32</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now let's see how much we gained. For this, we use the timeit magic command.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> gpu_sqrt(a)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>10 loops, best of 3: 24.7 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The GPU managed to compute the sqrt for 10 million points in 40 ms. Now let's see what we get with numpy, which is compiled for the CPU, and with our CPU ufunc:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> np.sqrt(a)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>100 loops, best of 3: 9.19 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> cpu_sqrt(a)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The slowest run took 6.34 times longer than the fastest. This could mean that an intermediate result is being cached.
+100 loops, best of 3: 8.92 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Wait! We do not gain anything and the CPU version is actually twice faster!</p>
+<p>There is a simple reason for this. When running on the GPU, the following happens under the hood:</p>
+<ul>
+<li>the input data (the array <code>a</code>) is transferred to the GPU memory;</li>
+<li>the calculation of the square root is done in parallel on the GPU for all elements of <code>a</code>;</li>
+<li>the resulting array is sent back to the host system. </li>
+</ul>
+<p>If the calculation is too simple, there is no use shipping our data to the GPU for fast parallel processing, if we are to wait so long for the data transfers to complete. In other words, most of the time is spent in the data transfers, and the GPU is basically useless.</p>
+<p>Let's see what happens with a more involved calculation.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="From-cartesian-to-polar-coordinates-on-the-GPU">From cartesian to polar coordinates on the GPU<a class="anchor-link" href="#From-cartesian-to-polar-coordinates-on-the-GPU">&#182;</a></h2><p>Let's build an array of 1000 points in 2D, described by the cartesian coordinates x and y. We choose to draw the points according to a 2D Gaussian distribution, introducing some correlation between the x and y components:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">1.</span><span class="p">]],</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;matplotlib.collections.PathCollection at 0x7fbac45bd358&gt;</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+z+C3K2hLUgAAAABJRU5ErkJggg==
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It's often useful to convert cartesian coordinates into the polar coordinates <code>R</code> and <code>theta</code>, where r is the distance of the point to origin, and where theta is the angle between the x axis and the direction of the point.</p>
+<p><img src="https://raw.githubusercontent.com/cbernet/maldives/master/numba/cart_polar.png" alt=""></p>
+<p><code>R</code> is easily obtained as the quadratic sum of x and y:</p>
+$$R = \sqrt{x^2 + y^2}$$<p>But to get theta, one has to use the <code>arctan2</code> function. This function is available in numpy, and we can use it to easily get the results (please note that the y coordinate has to be provided as the first argument)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> 
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Because of the correlation between x and y, we see two peaks at $\pi/4$ and $-3\pi/4$.</p>
+<p>Now let's try and perform the same calculation on the GPU. This time, we have two input values, and we define the function signature accordingly.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="nd">@vectorize</span><span class="p">([</span><span class="s1">&#39;float32(float32, float32)&#39;</span><span class="p">],</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span> 
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">theta</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As before with <code>np.arctan2</code>, we need to slice our <code>points</code> array to provide first the array of <code>y</code> coordinates, and then the array of <code>x</code> coordinates:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="n">gpu_arctan2</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-17-2811dabcd6c9&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>theta <span class="ansi-blue-fg">=</span> gpu_arctan2<span class="ansi-blue-fg">(</span>points<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> points<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/cuda/dispatcher.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kws)</span>
+<span class="ansi-green-intense-fg ansi-bold">     86</span>                       the input arguments<span class="ansi-blue-fg">.</span>
+<span class="ansi-green-intense-fg ansi-bold">     87</span>         &#34;&#34;&#34;
+<span class="ansi-green-fg">---&gt; 88</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> CUDAUFuncMechanism<span class="ansi-blue-fg">.</span>call<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>functions<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kws<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span> 
+<span class="ansi-green-intense-fg ansi-bold">     90</span>     <span class="ansi-green-fg">def</span> reduce<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> arg<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/npyufunc/deviceufunc.py</span> in <span class="ansi-cyan-fg">call</span><span class="ansi-blue-fg">(cls, typemap, args, kws)</span>
+<span class="ansi-green-intense-fg ansi-bold">    292</span>                 any_device <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-intense-fg ansi-bold">    293</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 294</span><span class="ansi-red-fg">                 </span>dev_a <span class="ansi-blue-fg">=</span> cr<span class="ansi-blue-fg">.</span>to_device<span class="ansi-blue-fg">(</span>a<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">=</span>stream<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    295</span>                 devarys<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>dev_a<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    296</span> 
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/cuda/dispatcher.py</span> in <span class="ansi-cyan-fg">to_device</span><span class="ansi-blue-fg">(self, hostary, stream)</span>
+<span class="ansi-green-intense-fg ansi-bold">    207</span> 
+<span class="ansi-green-intense-fg ansi-bold">    208</span>     <span class="ansi-green-fg">def</span> to_device<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> hostary<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 209</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> cuda<span class="ansi-blue-fg">.</span>to_device<span class="ansi-blue-fg">(</span>hostary<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">=</span>stream<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    210</span> 
+<span class="ansi-green-intense-fg ansi-bold">    211</span>     <span class="ansi-green-fg">def</span> to_host<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> devary<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/cuda/cudadrv/devices.py</span> in <span class="ansi-cyan-fg">_require_cuda_context</span><span class="ansi-blue-fg">(*args, **kws)</span>
+<span class="ansi-green-intense-fg ansi-bold">    210</span>     <span class="ansi-green-fg">def</span> _require_cuda_context<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kws<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    211</span>         get_context<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 212</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kws<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    213</span> 
+<span class="ansi-green-intense-fg ansi-bold">    214</span>     <span class="ansi-green-fg">return</span> _require_cuda_context
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/cuda/api.py</span> in <span class="ansi-cyan-fg">to_device</span><span class="ansi-blue-fg">(obj, stream, copy, to)</span>
+<span class="ansi-green-intense-fg ansi-bold">    101</span>     &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    102</span>     <span class="ansi-green-fg">if</span> to <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 103</span><span class="ansi-red-fg">         </span>to<span class="ansi-blue-fg">,</span> new <span class="ansi-blue-fg">=</span> devicearray<span class="ansi-blue-fg">.</span>auto_device<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">=</span>stream<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>copy<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    104</span>         <span class="ansi-green-fg">return</span> to
+<span class="ansi-green-intense-fg ansi-bold">    105</span>     <span class="ansi-green-fg">if</span> copy<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/cuda/cudadrv/devicearray.py</span> in <span class="ansi-cyan-fg">auto_device</span><span class="ansi-blue-fg">(obj, stream, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">    658</span>                 copy<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    659</span>                 subok=True)
+<span class="ansi-green-fg">--&gt; 660</span><span class="ansi-red-fg">             </span>sentry_contiguous<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    661</span>             devobj <span class="ansi-blue-fg">=</span> from_array_like<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">,</span> stream<span class="ansi-blue-fg">=</span>stream<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    662</span>         <span class="ansi-green-fg">if</span> copy<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/numba/cuda/cudadrv/devicearray.py</span> in <span class="ansi-cyan-fg">sentry_contiguous</span><span class="ansi-blue-fg">(ary)</span>
+<span class="ansi-green-intense-fg ansi-bold">    632</span> 
+<span class="ansi-green-intense-fg ansi-bold">    633</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 634</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> ValueError<span class="ansi-blue-fg">(</span>errmsg_contiguous_buffer<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    635</span> 
+<span class="ansi-green-intense-fg ansi-bold">    636</span> 
+
+<span class="ansi-red-fg">ValueError</span>: Array contains non-contiguous buffer and cannot be transferred as a single memory region. Please ensure contiguous buffer with numpy .ascontiguousarray()</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Hmm this doesn't work. As the exception says, it is because <code>points[:,1]</code> contain values that are not contiguous in memory, and same for <code>points[:,2]</code>. So we do as instructed and convert these slices into contiguous arrays:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="n">gpu_arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXQAAAD8CAYAAABn919SAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
+AAALEgAACxIB0t1+/AAAADl0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uIDMuMC4zLCBo
+dHRwOi8vbWF0cGxvdGxpYi5vcmcvnQurowAADe5JREFUeJzt3X+o3fddx/HXa239QVuxI8cQa+KR
+UYZhaAqXKGxIpduMrZgWVAxSOja5GxhsYaKXDuxUBhFdJ4gMMxIWIVYGaVnhVm2shVqw3W5KbNOm
+s2WkrCFLbi2jLf4had7+cb9XTy/n5Hx/nfs93/d9PuBwz/d7vud83997vveVb77n/f0cR4QAAP33
+ga4LAAC0g0AHgCQIdABIgkAHgCQIdABIgkAHgCQIdABIgkAHgCQIdABI4trNXNm2bdtiOBxu5ioB
+oPdOnTr1ZkQMpi23qYE+HA61srKymasEgN6z/XqZ5TjlAgBJEOgAkASBDgBJEOgAkASBDgBJEOgA
+kASBDgBJEOgAkASBDgBJEOjAnBkuLWu4tNx1GeghAh0AkiDQASAJAh0AkiDQASAJAh0AkiDQASAJ
+Ar0G2soAzCMCHQCSINABIAkCHQCSINABIAkCHQCSINABIAkCHQCSINABIAkCHQCSINABIImpgW57
+p+2nbL9s+yXb9xXzv2j7vO3Txe2O2ZcLAJjk2hLLXJb0+Yh43vaNkk7ZPlk89pWI+MvZlQcAKGtq
+oEfEBUkXivvv2D4r6eZZFwYAqKbSOXTbQ0m3SnqumHXQ9gu2j9q+qeXaAAAVlA502zdIOiHp/oh4
+W9JXJX1I0h6tHcF/ecLzFm2v2F5ZXV1toWQAwDilAt32dVoL8+MR8YgkRcTFiHgvIq5I+pqkveOe
+GxGHI2IhIhYGg0FbdQMANijT5WJJRySdjYiHRubvGFnsbkln2i8PAFBWmS6Xj0q6R9KLtk8X8x6Q
+dMD2Hkkh6Zykz86kQgBAKWW6XJ6R5DEPPd5+OQCAurhSFACSINABIAkCvUXDpWUNl5a7LgPAFkWg
+A0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0AS
+BDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASUwPd
+9k7bT9l+2fZLtu8r5n/Q9knbrxY/b5p9uQCAScocoV+W9PmI2C3pFyX9nu3dkpYkPRkRt0h6spgG
+AHRkaqBHxIWIeL64/46ks5JulrRf0rFisWOS7ppVkQCA6SqdQ7c9lHSrpOckbY+IC8VD35e0vdXK
+AACVlA502zdIOiHp/oh4e/SxiAhJMeF5i7ZXbK+srq42KnbeDJeWuy4BSQyXlsfuT+Pms99hklKB
+bvs6rYX58Yh4pJh90faO4vEdki6Ne25EHI6IhYhYGAwGbdQMABijTJeLJR2RdDYiHhp56DFJ9xb3
+75X0zfbLAwCUdW2JZT4q6R5JL9o+Xcx7QNIhSd+w/RlJr0v6rdmUCAAoY2qgR8Qzkjzh4dvbLQcA
+UBdXigJAEgQ6ACRBoFc0qWWMVjIAXSPQASAJAh0AkiDQASAJAh0AkiDQASAJAh0AkiDQASCJMmO5
+AJgDXOuAaThCB4AkCHQASIJAB4AkCHQASIJAB4AkCHQASIK2xYZoJUNTTYZkXl/m3KE7W60J/cQR
+OgAkQaADQBIEOgAkQaADQBIEOgAkQaADQBK0LV4FLWGYV7TLYhyO0AEgCQIdAJIg0AEgiamBbvuo
+7Uu2z4zM+6Lt87ZPF7c7ZlsmAGCaMkfoX5e0b8z8r0TEnuL2eLtlAQCqmhroEfG0pLc2oRYAQANN
+zqEftP1CcUrmptYqAgDUUjfQvyrpQ5L2SLog6cuTFrS9aHvF9srq6mrN1fXLcGn5/25AFewzaKJW
+oEfExYh4LyKuSPqapL1XWfZwRCxExMJgMKhbJwBgilqBbnvHyOTdks5MWhYAsDmmXvpv+2FJt0na
+ZvsNSQ9Kus32Hkkh6Zykz86wRgBACVMDPSIOjJl9ZAa1AAAa4EpRAEiCQAeAJAh06X0thm23G9LC
+iHGq7g/Tlmf/gkSgA0AaBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGgA0ASBDoAJEGg
+A0ASBDoAJEGgA0ASBDoAJDH1G4u2kklDkM5qaNL11z136M6ZvD6ArYUjdABIgkAHgCQIdABIgkAH
+gCQIdABIgkAHgCQI9E02XFrmG9qT4/1FVwh0AEiCQAeAJAh0AEhiaqDbPmr7ku0zI/M+aPuk7VeL
+nzfNtkwAwDRljtC/LmnfhnlLkp6MiFskPVlMAwA6NDXQI+JpSW9tmL1f0rHi/jFJd7VcFwCgorrn
+0LdHxIXi/vclbW+pHgBATY2Hz42IsB2THre9KGlRknbt2tV0dZuGXmLMwuh+NcthmRmSeWuqe4R+
+0fYOSSp+Xpq0YEQcjoiFiFgYDAY1VwcAmKZuoD8m6d7i/r2SvtlOOQCAusq0LT4s6d8lfdj2G7Y/
+I+mQpE/YflXSx4tpAECHpp5Dj4gDEx66veVaAAANcKUoACRBoANAEo3bFvuM1kRkwv4MjtABIAkC
+HQCSINABIAkCHQCSINABIAkCHQCSINABIIkt3YfeV+v9xgyROj8mDVnbdW84Q+luLRyhA0ASBDoA
+JEGgA0ASBDoAJEGgA0ASBDoAJEGgd2Tat79Panfrug0O5QyXljt9r9pYP/tgOzZzXyDQASAJAh0A
+kiDQASAJAh0AkiDQASAJAh0Akkgb6F23jY1Tpp7RumfRejaPv5e+4veIeZM20AFgqyHQASAJAh0A
+kmj0jUW2z0l6R9J7ki5HxEIbRQEAqmvjK+h+OSLebOF1AAANcMoFAJJoGugh6Qnbp2wvtlEQAKCe
+pqdcPhYR523/hKSTtl+JiKdHFyiCflGSdu3a1XB1Wxc9z7MzXFrWuUN3Vlq+j662nevbdO7Qnb3d
+Pun927EVNTpCj4jzxc9Lkh6VtHfMMocjYiEiFgaDQZPVAQCuonag277e9o3r9yV9UtKZtgoDAFTT
+5JTLdkmP2l5/nb+PiH9qpSoAQGW1Az0ivivp51usBQDQAG2LAJAEgQ4ASbRxpehcm9SCNW9tTX1u
+FZuVJu2E68/b+BrT2tpGly+z/tF1zut72GVdVd9DNMMROgAkQaADQBIEOgAkQaADQBIEOgAkQaAD
+QBIEOgAk0Zs+9HE9xqPz+z7sZx1Ne3zrDjW6mUOUtrGuca9RdV/J1k896e9p0nIb/77Gza96zUCm
+3+dGXW0fR+gAkASBDgBJEOgAkASBDgBJEOgAkASBDgBJ9KZtcVQb7Yl9anG8Wq1lhowt85pXaz2r
+2uK2cblJLW7Tlp+0jlm3g01af5/2mUnGbUPb21V1yOJJ9ZQZ4rhtVYdP3qy6yuIIHQCSINABIAkC
+HQCSINABIAkCHQCSINABIIleti2Ok6GlrKk22u2mtSjWGaWwzHPbrHHS67GP1Fd135r0+68yUmrV
+dt1xj29cX90RNze2M46ue9I+3sX+xhE6ACRBoANAEgQ6ACTRKNBt77P9Hduv2V5qqygAQHW1A932
+NZL+RtKvStot6YDt3W0VBgCopskR+l5Jr0XEdyPifyT9g6T97ZQFAKiqSaDfLOl7I9NvFPMAAB1w
+RNR7ov0bkvZFxO8W0/dI+oWIOLhhuUVJi8XkhyV9p365E22T9OYMXnez9L1+qf/b0Pf6pf5vQ9/r
+l2a3DT8dEYNpCzW5sOi8pJ0j0z9VzHufiDgs6XCD9UxleyUiFma5jlnqe/1S/7eh7/VL/d+Gvtcv
+db8NTU65fFvSLbZ/xvYPSfptSY+1UxYAoKraR+gRcdn2QUn/LOkaSUcj4qXWKgMAVNJoLJeIeFzS
+4y3V0sRMT+lsgr7XL/V/G/pev9T/beh7/VLH21D7Q1EAwHzh0n8ASCJFoNv+M9sv2D5t+wnbP9l1
+TVXZ/gvbrxTb8ajtH++6pips/6btl2xfsd2rToW+D2Fh+6jtS7bPdF1LHbZ32n7K9svFPnRf1zVV
+YftHbH/L9n8U9f9JZ7VkOOVi+8ci4u3i/u9L2h0Rn+u4rEpsf1LSvxYfNv+5JEXEH3VcVmm2f1bS
+FUl/K+kPImKl45JKKYaw+E9Jn9DaxXHflnQgIl7utLAKbP+SpHcl/V1EfKTreqqyvUPSjoh43vaN
+kk5Juqsv74FtS7o+It61fZ2kZyTdFxHPbnYtKY7Q18O8cL2k3v0rFRFPRMTlYvJZrfX190ZEnI2I
+WVw0Nmu9H8IiIp6W9FbXddQVERci4vni/juSzqpHV53HmneLyeuKWycZlCLQJcn2l2x/T9LvSPrj
+rutp6NOS/rHrIrYIhrCYI7aHkm6V9Fy3lVRj+xrbpyVdknQyIjqpvzeBbvtfbJ8Zc9svSRHxhYjY
+Kem4pINXf7VuTNuGYpkvSLqste2YK2XqB+qyfYOkE5Lu3/C/7rkXEe9FxB6t/c96r+1OTn315jtF
+I+LjJRc9rrXe+AdnWE4t07bB9qck/Zqk22MOP9yo8B70SakhLDBbxbnnE5KOR8QjXddTV0T8wPZT
+kvZJ2vQPqXtzhH41tm8Zmdwv6ZWuaqnL9j5Jfyjp1yPiv7uuZwthCIuOFR8qHpF0NiIe6rqeqmwP
+1rvSbP+o1j5g7ySDsnS5nNDaSI5XJL0u6XMR0aujLNuvSfphSf9VzHq2T506tu+W9NeSBpJ+IOl0
+RPxKt1WVY/sOSX+l/x/C4ksdl1SJ7Ycl3aa1kf4uSnowIo50WlQFtj8m6d8kvai1v2FJeqC4En3u
+2f45Sce0tv98QNI3IuJPO6klQ6ADAJKccgEAEOgAkAaBDgBJEOgAkASBDgBJEOgAkASBDgBJEOgA
+kMT/AoUNEeKnxQRKAAAAAElFTkSuQmCC
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And now it works!</p>
+<p><strong>As a general rule, one should remember that CUDA operates on data buffers that are contiguous in memory, like a C array, or a numpy array before any slicing.</strong></p>
+<p>Now let's be a bit more ambitious, and compute theta for 10 million points:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">1.</span><span class="p">]],</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e7</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">gpu_arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+AABJRU5ErkJggg==
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And finally, let's quantify how much time we gain by running on the GPU:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> gpu_arctan2(y, x) # compiled for the GPU 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>10 loops, best of 3: 36.8 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> np.arctan2(y, x) # compiled for the CPU
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>1 loop, best of 3: 287 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">timeit</span> [math.atan2(point[1], point[0]) for point in points] # plain python
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>1 loop, best of 3: 5.35 s per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nice! this time we gain almost a factor 10 on the GPU with respect to the numpy version, which is compiled for the CPU. And this comes on top of a factor 20 gain with respect to plain python.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Remember: To use the GPU efficiently, you need to give it enough data to process, and complicated tasks.</strong></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Generalized-ufuncs-on-the-GPU">Generalized ufuncs on the GPU<a class="anchor-link" href="#Generalized-ufuncs-on-the-GPU">&#182;</a></h2><p>In regular ufuncs, the calculation is done on each element of the input array, and returns a scalar.</p>
+<p>In generalized ufuncs (gufuncs), however, the calculation can deal with a sub-array of the input array, and return an array of different dimensions.</p>
+<p>Ok, I know that sometimes what I write does not make sense... But at least I realize it! So let's have a look at a few examples, things are going to become much clearer.</p>
+<h3 id="Generalized-ufuncs-:-from-cartesian-to-polar-coordinates">Generalized ufuncs : from cartesian to polar coordinates<a class="anchor-link" href="#Generalized-ufuncs-:-from-cartesian-to-polar-coordinates">&#182;</a></h3><p>Remember how we computed the polar angle for our 2D points above? It would have been nice to get both rho and theta from this calculation, to get a real conversion from cartesian to polar coordinates. This kind of thing is not possible with regular ufuncs (or maybe I just don't know how to do it). But with gufuncs, it's easy:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">guvectorize</span>
+
+<span class="nd">@guvectorize</span><span class="p">([</span><span class="s1">&#39;(float32[:], float32[:])&#39;</span><span class="p">],</span>
+             <span class="s1">&#39;(i)-&gt;(i)&#39;</span><span class="p">,</span>                
+             <span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_polar</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are two imporant differences between <code>guvectorize</code> and <code>vectorize</code>.</p>
+<p>For <code>guvectorize</code>:</p>
+<ul>
+<li><strong>one needs to provide the signature of the array operation</strong>. The signature of the array operation should not to confused with the signature of the compiled function that is provided as a first argument. In the example above, <code>(i)-&gt;(i)</code> means that a 1D array is taken in input, and that a 1D array with the same size is provided in the output. The 1D array corresponds to the last dimension or innermost dimension of the input array. For example, our points array is of shape <code>(10000000,2)</code> so the last dimension is of size 2.</li>
+<li><strong>the result is taken in input and modified in place</strong>. In the code above, the resulting polar coordinates R and theta are stored in the <code>out</code> array while <code>vec</code>, the input array, contains the cartesian coordinates <code>x</code> and <code>y</code>.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's do the conversion between cartesian and polar coordinates:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">polar_coords</span> <span class="o">=</span> <span class="n">gpu_polar</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">polar_coords</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">polar_coords</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+gg==
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Generalized-ufunc:-Average">Generalized ufunc: Average<a class="anchor-link" href="#Generalized-ufunc:-Average">&#182;</a></h3><p>To understand better how gufuncs work, let's make one that computes the average of the values on each line of a 2D array:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@guvectorize</span><span class="p">([</span><span class="s1">&#39;(float32[:], float32[:])&#39;</span><span class="p">],</span>
+             <span class="s1">&#39;(n)-&gt;()&#39;</span><span class="p">,</span>                
+             <span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_average</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">array</span><span class="p">:</span> 
+        <span class="n">acc</span> <span class="o">+=</span> <span class="n">val</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To test our gufunc, we create a 2D array:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">a</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[31]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([[ 0.,  1.,  2.,  3.,  4.],
+       [ 5.,  6.,  7.,  8.,  9.],
+       [10., 11., 12., 13., 14.],
+       [15., 16., 17., 18., 19.],
+       [20., 21., 22., 23., 24.],
+       [25., 26., 27., 28., 29.],
+       [30., 31., 32., 33., 34.],
+       [35., 36., 37., 38., 39.],
+       [40., 41., 42., 43., 44.],
+       [45., 46., 47., 48., 49.],
+       [50., 51., 52., 53., 54.],
+       [55., 56., 57., 58., 59.],
+       [60., 61., 62., 63., 64.],
+       [65., 66., 67., 68., 69.],
+       [70., 71., 72., 73., 74.],
+       [75., 76., 77., 78., 79.],
+       [80., 81., 82., 83., 84.],
+       [85., 86., 87., 88., 89.],
+       [90., 91., 92., 93., 94.],
+       [95., 96., 97., 98., 99.]], dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">gpu_average</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[32]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([ 2.,  7., 12., 17., 22., 27., 32., 37., 42., 47., 52., 57., 62.,
+       67., 72., 77., 82., 87., 92., 97.], dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Device-functions">Device functions<a class="anchor-link" href="#Device-functions">&#182;</a></h2><p>So far, we have run a single function, either a ufunc or a gufunc, on the GPU, but we are not forced to put all of our code in a single function.</p>
+<p>Indeed, it is also  possible to compile helper functions for the GPU. These functions, called <strong>device functions</strong>, can then be used on the GPU to make the code cleaner and more modular.</p>
+<p>As an example, let's take again the gufunc defined just above, that computes the average of the values of each line of a 2D array.</p>
+<p>We define a device function to add the using the <code>numba.cuda.jit</code> decorator, to sum up the elements of a 1D array. Then, we modify the gpu_average gufunc to make use of the <code>add</code> device function. And finally, we create another gufunc to sum up the elements of on each line of a 2D array:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">cuda</span>
+
+<span class="nd">@cuda</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">array</span><span class="p">):</span> 
+  <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">array</span><span class="p">:</span> 
+    <span class="n">acc</span> <span class="o">+=</span> <span class="n">val</span>
+  <span class="k">return</span> <span class="n">acc</span>
+
+<span class="nd">@guvectorize</span><span class="p">([</span><span class="s1">&#39;(float32[:], float32[:])&#39;</span><span class="p">],</span>
+             <span class="s1">&#39;(n)-&gt;()&#39;</span><span class="p">,</span>                
+             <span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_average_2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+<span class="nd">@guvectorize</span><span class="p">([</span><span class="s1">&#39;(float32[:], float32[:])&#39;</span><span class="p">],</span>
+             <span class="s1">&#39;(n)-&gt;()&#39;</span><span class="p">,</span>                
+             <span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_sum</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+    
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">gpu_average_2</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[34]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([ 2.,  7., 12., 17., 22., 27., 32., 37., 42., 47., 52., 57., 62.,
+       67., 72., 77., 82., 87., 92., 97.], dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">gpu_sum</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[35]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([ 10.,  35.,  60.,  85., 110., 135., 160., 185., 210., 235., 260.,
+       285., 310., 335., 360., 385., 410., 435., 460., 485.],
+      dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The device function allows us to avoid code duplication.</p>
+<p>Obviously, it is a bit artifial to use a device function in such an easy case. But when implementing complex algorithms, these functions can prove very useful. Indeed, just like on the CPU, the general principles of programming apply: functions should be simple and to the point, and code duplication should be avoided.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Memory-management-with-device-arrays">Memory management with device arrays<a class="anchor-link" href="#Memory-management-with-device-arrays">&#182;</a></h2><p>As we have seen in the first ufunc example given in this article (parallel square root calculation), the GPU does not always provide a gain in performance.</p>
+<p>Indeed, before using the raw computing power of the GPU, we need to ship the data to the device. And afterwards, we need to get the results back.</p>
+<p>A good way to improve performance is to minimize data transfers between the host system and the GPU,  and this can be done with device arrays.</p>
+<p>To illustrate this, we will use an example provided by nvidia in its DLI course. Let's assume we want to implement a neural network for image processing from scratch. A hidden layer in the network might have to do the following:</p>
+<ul>
+<li>normalize greyscale values in the image</li>
+<li>weigh them</li>
+<li>apply an activation function </li>
+</ul>
+<p>Each of these three tasks can be done in parallel on the GPU.</p>
+<p>But first, let's see how to do that on the CPU with plain numpy. 
+For simplicity, we will generate the greyscale values and the weights randomly.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">1000000</span>
+
+<span class="c1"># random values between 0. and 255.</span>
+<span class="n">greyscales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="c1"># random weights following a Gaussian distribution</span>
+<span class="c1"># centred on 0.5 and with width 0.1</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">grayscales</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">grayscales</span> <span class="o">/</span> <span class="mi">255</span>
+
+<span class="k">def</span> <span class="nf">weigh</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">values</span> <span class="o">*</span> <span class="n">weights</span>
+        
+<span class="k">def</span> <span class="nf">activate</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">values</span><span class="p">)</span> <span class="p">)</span> <span class="o">/</span> \
+            <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">values</span><span class="p">)</span> <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+normalized = normalize(greyscales)
+weighted = weigh(normalized, weights)
+activated = activate(weighted)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>10 loops, best of 3: 28.7 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we implement a parallel version of this algorithm for the GPU, as we have seen above.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nd">@vectorize</span><span class="p">([</span><span class="s1">&#39;float32(float32)&#39;</span><span class="p">],</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_normalize</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">x</span> <span class="o">/</span> <span class="mi">255</span>
+
+<span class="nd">@vectorize</span><span class="p">([</span><span class="s1">&#39;float32(float32, float32)&#39;</span><span class="p">],</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_weigh</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">w</span>
+
+<span class="nd">@vectorize</span><span class="p">([</span><span class="s1">&#39;float32(float32)&#39;</span><span class="p">],</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gpu_activate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> 
+  <span class="k">return</span> <span class="p">(</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="p">)</span> <span class="o">/</span> <span class="p">(</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Please note that the code in these ufuncs operates on scalar values, so we replaced the numpy ufuncs like np.exp by their math equivalent (the division by 255 and the multiplication between the values and the weights were also numpy ufuncs, though hidden a bit).</p>
+<p>And we check the performance:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[39]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+normalized = gpu_normalize(greyscales)
+weighted = gpu_weigh(normalized, weights)
+activated = gpu_activate(weighted)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The slowest run took 30.06 times longer than the fastest. This could mean that an intermediate result is being cached.
+1 loop, best of 3: 12 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That's already quite nice, we gained more than a factor of two!</p>
+<p>But we realize that we spend time transferring data back and forth between the host and the GPU for nothing:</p>
+<ol>
+<li>transfer <code>greyscales</code> to the GPU</li>
+<li>transfer <code>normalized</code> to the host, and then back to the GPU, together with <code>weights</code></li>
+<li>transfer <code>weighted</code> to the host, and then back to the GPU</li>
+<li>transfer <code>activated</code> to the host</li>
+</ol>
+<p>Actually, we only need to:</p>
+<ol>
+<li>transfer <code>greyscales</code> and <code>weights</code> to the GPU</li>
+<li>retrieve <code>activated</code></li>
+</ol>
+<p>So let's do that:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+
+# create intermediate arrays on the GPU
+normalized_gpu = cuda.device_array(shape=(n,), 
+                               dtype=np.float32)
+weighted_gpu = cuda.device_array(shape=(n,), 
+                             dtype=np.float32)
+
+# note that output device arrays are provided as arguments 
+gpu_normalize(greyscales, out=normalized_gpu)
+gpu_weigh(normalized_gpu, weights, out=weighted_gpu)
+activated = gpu_activate(weighted_gpu)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>100 loops, best of 3: 6.16 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We gain a factor of two by eliminating unnecessary data transfers!</p>
+<p>Another important thing to know is that we can also take full control on the transfers to and from the GPU like this:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># transfer inputs to the gpu</span>
+<span class="n">greyscales_gpu</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">greyscales</span><span class="p">)</span>
+<span class="n">weights_gpu</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+<span class="c1"># create intermediate arrays and output array on the GPU</span>
+<span class="n">normalized_gpu</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,),</span> 
+                               <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">weighted_gpu</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,),</span> 
+                             <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">activated_gpu</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,),</span> 
+                             <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now that everything we need is on the GPU, we do the calculation:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+gpu_normalize(greyscales_gpu, out=normalized_gpu)
+gpu_weigh(normalized_gpu, weights_gpu, out=weighted_gpu)
+gpu_activate(weighted_gpu, out=activated_gpu)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>1000 loops, best of 3: 1.32 ms per loop
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You might be thinking that this factor 5 gain is artificial, because we did not include the necessary transfer times for the input and output data. That's right! Still, this illustrates how you can take full control of your data transfers, which might prove useful on more complex processing workflows.</p>
+<p>For instance, if we wanted to re-use any of the device arrays defined above, we could do it now, as they are still residing on the GPU as I'm writing this!</p>
+<p>Finally, here is how to retrieve the results:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[43]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">activated</span> <span class="o">=</span> <span class="n">activated_gpu</span><span class="o">.</span><span class="n">copy_to_host</span><span class="p">()</span>
+<span class="n">activated</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[43]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([0.27804664, 0.40110067, 0.00198978, ..., 0.27639735, 0.41989788,
+       0.22209653], dtype=float32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+ 
+
