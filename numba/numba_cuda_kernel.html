@@ -2,7 +2,7 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Numba-+-CUDA-on-Google-Colab">Numba + CUDA on Google Colab<a class="anchor-link" href="#Numba-+-CUDA-on-Google-Colab">&#182;</a></h2><p>By default, Google Colab is not able to run numba + CUDA, because two lilbraries are not found, <code>libdevice</code> and <code>libnvvm.so</code>. So we need to make sure that these libraries are found in the notebook.</p>
+<h2 id="Numba-+-CUDA-on-Google-Colab">Numba + CUDA on Google Colab<a class="anchor-link" href="#Numba-+-CUDA-on-Google-Colab">&#182;</a></h2><p>By default, Google Colab is not able to run numba + CUDA, because two libraries are not found, <code>libdevice</code> and <code>libnvvm.so</code>. So we need to make sure that these libraries are found in the notebook.</p>
 <p>First, we look for these libraries on the system. To do that, we simply run the <code>find</code> command, to recursively look for these libraries starting at the root of the filesystem. The exclamation mark escapes the line so that it's executed by the Linux shell, and not by the jupyter notebook.</p>
 
 </div>
@@ -10,7 +10,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[458]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>find / -iname <span class="s1">&#39;libdevice&#39;</span>
@@ -82,7 +82,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[460]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -100,7 +100,7 @@
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[460]:</div>
+    <div class="prompt output_prompt">Out[3]:</div>
 
 
 
@@ -126,7 +126,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[461]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
@@ -149,7 +149,7 @@
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[461]:</div>
+    <div class="prompt output_prompt">Out[4]:</div>
 
 
 
@@ -206,7 +206,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[463]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># move input data to the device</span>
@@ -292,7 +292,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">cuda</span><span class="o">.</span><span class="n">detect</span><span class="p">()</span>
@@ -325,7 +325,7 @@ Summary:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[0]:</div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
 
@@ -366,15 +366,15 @@ Summary:
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Number-of-blocks-and-number-of-threads-per-block">Number of blocks and number of threads per block<a class="anchor-link" href="#Number-of-blocks-and-number-of-threads-per-block">&#182;</a></h3><p>When the kernel is launched, each block of threads is sent to a single SM, and each SM can end up with multiple blocks to process.</p>
-<p>The first conclusion we can draw is that if the number of blocks is lower than the number of SMs in the GPU, some of the SMs will remain idle. That was the case in our first simple example above: we used 32 blocks, and we have 72 SMs on the Tesla T4. Therefore, 40 SMs were not used.</p>
+<p>The first conclusion we can draw is that if the number of blocks is lower than the number of SMs in the GPU, some of the SMs will be idle. That was the case in our first simple example above: we used 32 blocks, and we have 72 SMs on the Tesla T4. Therefore, 40 SMs remained unused.</p>
 <p>To process a block, the SM partitions it into groups of 32 threads called <em>warps</em>. A warp executes one common instruction at a given time in parallel for all threads in the warp. So full efficiency is realized if all warps in the block are complete. Therefore, the number of threads per block needs to be a multiple of 32. Moreover, to limit latency, this number should not be too low.</p>
 <p>Deciding which execution configuration to use is not easy, and the choice should be driven by performance analysis. However, here are some basic rules to get started:</p>
 <ul>
 <li><strong>The number of blocks in the grid should be larger than the number of SMs on the GPU, typically 2 to 4 times larger.</strong> </li>
 <li><strong>The number of threads per block should be a multiple of 32, typically between 128 and 512.</strong></li>
 </ul>
-<p>The Tesla T4 has 72 streaming multiprocessors. On paper, it will perform best on data arrays with a size larger than 74 <em> 2 </em> 128 ~ 20 000. And this is the bare minimum: this card will typically be used on arrays much larger than that. In our simple example above, we used an array of size 4096, which is way too small.</p>
-<p>On the other hand, what if the data array is very large? Let's consider an array with one billion entries. Following the second rule above, we can choose a number of threads per block of 256, and we end up with 1e9 / 256 ~ 3 million blocks. Since the CUDA kernel launch overhead increases with the number of blocks, going for such a large number of blocks would seriously hit performance. In the following, we will see how to use striding to solve this problem.</p>
+<p>The Tesla T4 has 72 streaming multiprocessors. On paper, it will perform best on data arrays with a size larger than 72 <em> 2 </em> 128 ~ 20 000. And this is the bare minimum: this card will typically be used on arrays much larger than that. In our simple example above, we used an array of size 4096, which is way too small.</p>
+<p>On the other hand, what if the data array is very large? Let's consider an array with one billion entries. Following the second rule above, we can choose a number of threads per block of 256, and we end up with 1e9 / 256 ~ 3 million blocks. Since the CUDA kernel launch overhead increases with the number of blocks, going for such a large number of blocks would hit performance. In the following, we will see how to use striding to solve this problem.</p>
 
 </div>
 </div>
@@ -434,26 +434,112 @@ Summary:
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>In this way, a given thread deals with several elements, and the number of threads is kept under control. Threads keep doing work in a coordinated way, and the GPU is not wasting time creating and scheduling threads.</p>
-<p>To understand the code above, let's consider a small example with:</p>
+<p>Let's consider a small example with:</p>
 <ul>
 <li>an input data array of size 8</li>
 <li>blocks with 4 threads each</li>
 </ul>
-<p>Without striding, we end up with two blocks, and 8 threads in total, each dealing with a single element in the array.</p>
-<p>With striding, we get one block, and 4 threads in total. Each thread deals with two elements.  Specifically, in the code above:</p>
-<ul>
-<li><code>start</code> is the thread index, which is 0, 1, 2, 3 for the four threads, respectively. </li>
-<li><code>stride</code> is the size of the grid, which is the total number of threads in the grid, here 4. </li>
-<li><code>x.shape[0]</code> is the size of the input data array <code>x</code>, which is 1D. So it's 8. </li>
-</ul>
-<p>So here are the elements processed by each thread:</p>
+<p>Without striding, we need to use two blocks so 8 threads in total, each dealing with a single element in the array:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[53]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">d_a</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">d_out</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">device_array_like</span><span class="p">(</span><span class="n">d_a</span><span class="p">)</span>
+
+<span class="c1"># 2 blocks of 4 threads</span>
+<span class="n">gpu_atan</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">](</span><span class="n">d_a</span><span class="p">,</span> <span class="n">d_out</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d_out</span><span class="o">.</span><span class="n">copy_to_host</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0.        0.7853982 1.1071488 1.2490458 1.3258177 1.3734008 1.4056478
+ 1.4288993]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>With striding, we can use a single block with 4 threads, in which case each thread deals with two elements.  Specifically, in the code above:</p>
+<ul>
+<li><code>start</code> is the thread index, which is 0, 1, 2, 3 for the four threads, respectively. </li>
+<li><code>stride</code> is the size of the grid, which is the total number of threads in the grid, here 4. </li>
+<li><code>x.shape[0]</code> is the size of the input data array <code>x</code>, which is 8. </li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[55]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 1 block of 4 threads</span>
+<span class="n">gpu_atan_stride</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">](</span><span class="n">d_a</span><span class="p">,</span> <span class="n">d_out</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d_out</span><span class="o">.</span><span class="n">copy_to_host</span><span class="p">())</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0.        0.7853982 1.1071488 1.2490458 1.3258177 1.3734008 1.4056478
+ 1.4288993]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here are the elements processed by each thread:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">thread_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
@@ -500,7 +586,7 @@ thread 3
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>A useful way to think about this is to imagine that the grid is moving to process all elements in the input array, as shown below. In this picture, each color corresponds to a thread (e.g. thread 0 processes elements 0 and 4).</p>
-<p>Of course, even though this representation can help you understand how to code your striding, keep in mind that threads still proceed asynchronously. In other words, thread 0 might be done with elements 0 and 4 while thread 1 is still dealing with element 1.</p>
+<p>Of course, even though this representation can help you figure out how to code your striding, keep in mind that threads still proceed asynchronously. In other words, thread 0 might be done with elements 0 and 4 while thread 1 is still dealing with element 1.</p>
 <p><img src="https://raw.githubusercontent.com/cbernet/maldives/master/numba/striding.png" alt=""></p>
 
 </div>
@@ -551,19 +637,6 @@ thread 3
 <div class="prompt input_prompt">In&nbsp;[0]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
-<div class="inner_cell">
-    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">256</span><span class="o">*</span><span class="mi">1000000</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="c1"># move input data to the device</span>
@@ -587,10 +660,11 @@ thread 3
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[58]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">time</span> gpu_atan_stride[1, 1](d_a, d_out); cuda.synchronize()
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># [1,1] means : 1 block with 1 thread</span>
+<span class="o">%</span><span class="k">time</span> gpu_atan_stride[1, 1](d_a, d_out); cuda.synchronize()
 </pre></div>
 
     </div>
@@ -607,8 +681,8 @@ thread 3
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>CPU times: user 29.5 s, sys: 24.8 s, total: 54.3 s
-Wall time: 54.3 s
+<pre>CPU times: user 29.9 s, sys: 24.9 s, total: 54.8 s
+Wall time: 54.8 s
 </pre>
 </div>
 </div>
@@ -620,17 +694,21 @@ Wall time: 54.3 s
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Then, we choose a first execution configuration by following our simple rules, without striding</p>
+<p>Processing these 256 million values in a single thread on the GPU took almost a minute. Let's see how parallel processing can help us. For that, we choose an execution configuration by following our simple rules, and we use the non-striding kernel:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[61]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">time</span> gpu_atan[1000000,256](d_a, d_out); cuda.synchronize()
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># RUN THIS TWICE. </span>
+<span class="c1"># sometimes, the first time, the timing is way too large for some reason, </span>
+<span class="c1"># and not representative of the actual timing</span>
+<span class="c1"># you should get something around 13 ms. </span>
+<span class="o">%</span><span class="k">time</span> gpu_atan[1000000,256](d_a, d_out); cuda.synchronize()
 </pre></div>
 
     </div>
@@ -647,8 +725,8 @@ Wall time: 54.3 s
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>CPU times: user 7.57 ms, sys: 1.34 ms, total: 8.9 ms
-Wall time: 12.8 ms
+<pre>CPU times: user 6.62 ms, sys: 3.47 ms, total: 10.1 ms
+Wall time: 12.5 ms
 </pre>
 </div>
 </div>
@@ -661,17 +739,18 @@ Wall time: 12.8 ms
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The parallel version is much faster as expected.</p>
-<p>Finally, let's try the striding version:</p>
+<p>Now, let's try and see if the striding version brings any performance improvement:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="prompt input_prompt">In&nbsp;[63]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">time</span> gpu_atan_stride[50000,256](d_a, d_out); cuda.synchronize()
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># RUN THIS TWICE</span>
+<span class="o">%</span><span class="k">time</span> gpu_atan_stride[50000,256](d_a, d_out); cuda.synchronize()
 </pre></div>
 
     </div>
@@ -688,8 +767,8 @@ Wall time: 12.8 ms
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>CPU times: user 4.95 ms, sys: 4.42 ms, total: 9.37 ms
-Wall time: 10.8 ms
+<pre>CPU times: user 6.06 ms, sys: 2.04 ms, total: 8.11 ms
+Wall time: 10.7 ms
 </pre>
 </div>
 </div>
@@ -712,7 +791,7 @@ Wall time: 10.8 ms
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Multidimensional-datasets-:-Matrix-multiplication">Multidimensional datasets : Matrix multiplication<a class="anchor-link" href="#Multidimensional-datasets-:-Matrix-multiplication">&#182;</a></h2><p>So far, we've been working with one-dimensional arrays, making use of a 1D grid of threads.</p>
-<p>In the following kernel, <code>cuda.grid(1)</code> returns a single index that identifies the position of the thread in the grid, and and <code>cuda.gridsize(1)</code> returns the length of the grid of threads.</p>
+<p>In the following 1D kernel, <code>cuda.grid(1)</code> returns a single index that identifies the position of the thread in the grid, and and <code>cuda.gridsize(1)</code> returns the length of the grid of threads:</p>
 
 </div>
 </div>
@@ -738,8 +817,8 @@ Wall time: 10.8 ms
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>These functions also provide an easy interface for the processing of 2D and 3D data.</p>
-<p>In this  section, we will see how to deploy 2D and 3D grids of threads to process 2D and 3D data, and we will learn how to stride through multidimensional data. Then, we will implement a practical case: matrix multiplication.</p>
+<p>As we will see, these functions also provide an easy interface for the processing of 2D and 3D data.</p>
+<p>In this  section, you will learn how to deploy a 2D grid of threads to process 2D data, and how to stride through 2D data. Then, you will implement a practical case: matrix multiplication.</p>
 
 </div>
 </div>
@@ -772,7 +851,7 @@ Wall time: 10.8 ms
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As you can see, this kernel does not even have an input. Its goal is to record in the output 2D array the coordinates of the current thread.</p>
+<p>As you can see, this kernel does not even have an input. Its goal is only to encode and record in the output 2D array the coordinates of the current thread.</p>
 <p>Now, let's create the output data structure:</p>
 
 </div>
@@ -780,7 +859,7 @@ Wall time: 10.8 ms
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[492]:</div>
+<div class="prompt input_prompt">In&nbsp;[66]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
@@ -797,7 +876,7 @@ Wall time: 10.8 ms
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[492]:</div>
+    <div class="prompt output_prompt">Out[66]:</div>
 
 
 
@@ -824,11 +903,13 @@ Wall time: 10.8 ms
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[493]:</div>
+<div class="prompt input_prompt">In&nbsp;[68]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">d_a</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="c1"># we use two blocks, side-by-side in the horizontal direction</span>
 <span class="n">blocks</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># each block has 6 threads arranged in 3 lines and 2 columns</span>
 <span class="n">threads_per_block</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">gpu_2d</span><span class="p">[</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads_per_block</span><span class="p">](</span><span class="n">d_a</span><span class="p">)</span>
 <span class="n">d_a</span><span class="o">.</span><span class="n">copy_to_host</span><span class="p">()</span>
@@ -844,7 +925,7 @@ Wall time: 10.8 ms
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[493]:</div>
+    <div class="prompt output_prompt">Out[68]:</div>
 
 
 
@@ -864,22 +945,23 @@ Wall time: 10.8 ms
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We see that <code>i1</code> indexes the first dimension (the lines) while <code>i2</code> indexes the second dimension (the columns).</p>
-<p>As in the 1D case, it's necessary to make sure that the grid covers the whole output data structure. For example, if we mess up in the description of the block structure, the last two columns remain unprocessed, and we access unallowed memory "below" our 2D array:</p>
+<p>The first two columns were processed by the first block of threads, and the last two by the second block.</p>
+<p>Looking at the kernel code and at the output above, we see that <code>i1</code> indexes the first dimension (the lines) while <code>i2</code> indexes the second dimension (the columns).</p>
+<p>As in the 1D case, it's necessary to make sure that the grid covers the whole output data structure. For example, if we mess up in the description of the block structure, the last two columns remain unprocessed, and we actually access unallowed memory "below" our 2D array:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[494]:</div>
+<div class="prompt input_prompt">In&nbsp;[69]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># need to send back the matrix of zeros </span>
 <span class="c1"># to reset it on the device</span>
 <span class="n">d_a</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="c1"># here we mess up: </span>
-<span class="c1"># we require a first two blocks on top of each other, </span>
+<span class="c1"># we require two blocks on top of each other, </span>
 <span class="c1"># and we get a grid with a total height of 2x3=6 </span>
 <span class="c1"># and a total width of 1x2=2...</span>
 <span class="n">gpu_2d</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)](</span><span class="n">d_a</span><span class="p">)</span>
@@ -896,7 +978,7 @@ Wall time: 10.8 ms
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[494]:</div>
+    <div class="prompt output_prompt">Out[69]:</div>
 
 
 
@@ -947,14 +1029,14 @@ and first make sure that our implementation of striding is working:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Again, we reset the output data on the device, and we deploy a <strong>single</strong> <code>(3,2)</code> block. The grid therefore covers only half of the output array. But the striding will move the grid in the output array, making sure that the whole array is covered:</p>
+<p>We reset the output data on the device, and we deploy a <strong>single</strong> <code>(3,2)</code> block. The grid therefore covers only half of the output array. But the striding will move the grid in the output array, making sure that the whole array is covered:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[498]:</div>
+<div class="prompt input_prompt">In&nbsp;[71]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">d_a</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -972,7 +1054,7 @@ and first make sure that our implementation of striding is working:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[498]:</div>
+    <div class="prompt output_prompt">Out[71]:</div>
 
 
 
@@ -1022,7 +1104,7 @@ and first make sure that our implementation of striding is working:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[501]:</div>
+<div class="prompt input_prompt">In&nbsp;[73]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">d_a</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -1040,7 +1122,7 @@ and first make sure that our implementation of striding is working:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[501]:</div>
+    <div class="prompt output_prompt">Out[73]:</div>
 
 
 
@@ -1068,7 +1150,7 @@ and first make sure that our implementation of striding is working:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[502]:</div>
+<div class="prompt input_prompt">In&nbsp;[74]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
@@ -1087,7 +1169,7 @@ and first make sure that our implementation of striding is working:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[502]:</div>
+    <div class="prompt output_prompt">Out[74]:</div>
 
 
 
@@ -1120,14 +1202,14 @@ and first make sure that our implementation of striding is working:</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="2D-matrix-multiplication-:-theory">2D matrix multiplication : theory<a class="anchor-link" href="#2D-matrix-multiplication-:-theory">&#182;</a></h3><p>Implement a 2D matrix multiplication kernel is an excellent way to confirm that we now master striding in 2D.</p>
 <p>First, a little reminder. Two matrices A of size (m,n) and B of size (n,p) can be multiplied since the number of colums of matrix A is equal to the number of lines of matrix B. The product matrix C is then of size (m,p). And the value of one of the coefficients of matrix C is given by:</p>
-$$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if you are new to linear algebra or haven't used it in a long time. So let's take a simple example in code. We create two matrices:</p>
+$$c_{ij} = \sum_{k=0}^{n} a_{ik} b_{kj}$$<p>This might seem a bit complicated if you are new to linear algebra or haven't used it in a long time. So let's take a simple example in code. We create two matrices:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[529]:</div>
+<div class="prompt input_prompt">In&nbsp;[75]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
@@ -1166,14 +1248,14 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>And we do the multiplication with numpy</p>
+<p>And we do the multiplication with numpy (on the CPU):</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[534]:</div>
+<div class="prompt input_prompt">In&nbsp;[76]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
@@ -1190,7 +1272,7 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[534]:</div>
+    <div class="prompt output_prompt">Out[76]:</div>
 
 
 
@@ -1211,7 +1293,7 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Matrix <code>a</code> is of size <code>(2,3)</code> and matrix <code>b</code> of size <code>(3,4)</code>, so the product matrix is of size <code>(2,4)</code>.</p>
 <p>Let's consider for example the coefficient on the first line and second column of the product matrix, which is 23. This is c01. The summation equation above tells us that this coefficient is obtained by taking the coefficients of the first line of matrix a, and by multiplying them with the coefficients of the second column of matrix b, respectively, before summing everything.</p>
-<p>We get: <code>c01 = a00*b10 + a01*b11 + a02*b12 = 0*1 + 1*5 +  2*9 = 23</code></p>
+<p>We get: <code>c01 = a00*b01 + a01*b11 + a02*b21 = 0*1 + 1*5 +  2*9 = 23</code></p>
 
 </div>
 </div>
@@ -1233,7 +1315,7 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span> 
   <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
   <span class="n">the_sum</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="c1"># or a.shape[1] </span>
+  <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="c1"># or a.shape[1] since they are equal</span>
     <span class="n">the_sum</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i2</span><span class="p">]</span>
   <span class="n">c</span><span class="p">[</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span> <span class="o">=</span> <span class="n">the_sum</span>
 </pre></div>
@@ -1246,14 +1328,14 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We ship the matrices <code>a</code> and <code>b</code> to the device, create the output matrix <code>c</code>, and deploy the kernel:</p>
+<p>We ship the matrices <code>a</code> and <code>b</code> to the device, and create the output matrix <code>c</code>:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[543]:</div>
+<div class="prompt input_prompt">In&nbsp;[78]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">d_a</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -1286,9 +1368,17 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then, we deploy the kernel. We use a single block with 8 threads, arranged as a 2D array with 2 lines and 4 columns, matching the shape of the output matrix:</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[544]:</div>
+<div class="prompt input_prompt">In&nbsp;[79]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">multiply</span><span class="p">[(</span><span class="mi">1</span><span class="p">,),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">)](</span><span class="n">d_a</span><span class="p">,</span> <span class="n">d_b</span><span class="p">,</span> <span class="n">d_c</span><span class="p">)</span>
@@ -1323,7 +1413,7 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Fine, we get the same results as with numpy.</p>
-<p>Implementing striding is really no big deal. The only thing that could be a bit tricky is to remember that we need to stride on the output matrix, which has shape <code>(a.shape[0], b.shape[1])</code></p>
+<p>Implementing striding is really no big deal. The only thing that could be a bit tricky is to remember that we need to stride on the output matrix, which has shape <code>(a.shape[0], b.shape[1])</code>. For striding, the inputs are irrelevant!</p>
 
 </div>
 </div>
@@ -1352,7 +1442,7 @@ $$c_{ij} = \sum_{k=0}^{N} a_{ik} b_{kj}$$<p>This might seem a bit complicated if
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[556]:</div>
+<div class="prompt input_prompt">In&nbsp;[81]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># shipping back c to reset it on the device: </span>
