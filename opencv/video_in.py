@@ -6,7 +6,8 @@ from framecounter import FrameCounter
 fcount = FrameCounter()
 
 cv2.startWindowThread()
-cap = cv2.VideoCapture('walking.mp4')
+# cap = cv2.VideoCapture('walking.mp4')
+cap = cv2.VideoCapture(0)
 
 i = 0
 while(True):
@@ -20,7 +21,9 @@ while(True):
     
     cv2.imshow('frame',frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+       # breaking the loop if the user types q
+       # note that the video window must be highlighted!
+       break
     fcount.stop()
     
     if i%10==0:
