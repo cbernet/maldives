@@ -1,5 +1,9 @@
+'''Not used but kept for future reference
+'''
+
 import pandas as pd
-from tools import MongoCollection, preprocess
+from db_mongo import MongoCollection
+from tools import preprocess
 
 if __name__ == '__main__':
 

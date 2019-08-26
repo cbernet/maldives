@@ -19,13 +19,16 @@ import numpy as np
 import pymongo
 import pprint
 
+from tools import preferences
+
 # Open SPI bus
 spi = spidev.SpiDev()
 spi.open(0,0)
  
-# Function to read SPI data from MCP3008 chip
-# Channel must be an integer 0-7
 def ReadChannel(channel):
+  '''Function to read SPI data from MCP3008 chip
+  Channel must be an integer 0-7
+  '''
   spi.max_speed_hz=50000
   adc = spi.xfer2([1,(8+channel)<<4,0])
   data = ((adc[1]&3) << 8) + adc[2]
@@ -33,8 +36,7 @@ def ReadChannel(channel):
 
 # setup database access
 
-db = 'sqlite'
-
+db = preferences['dbtype']
 if db == 'mongo':
   client = pymongo.MongoClient('localhost',27017)
   mydb = client['power']
@@ -55,7 +57,6 @@ while 1:
   minadc = data.min()
   maxadc = data.max()
   now = time.time()
-#   print('read', nsamples, 'samples', mean, rms, minadc, maxadc, time)
   summary = {
     'channel':0,
     'mean':mean,
@@ -70,10 +71,4 @@ while 1:
     time.sleep(delay)
   elif db == 'sqlite':
     db_sqlite.insert(summary)
-  
-# while True:
-#   print(ReadChannel(0))
-   
-#   # Wait before repeating loop
-#   time.sleep(delay)
 

@@ -10,9 +10,9 @@ import time
 import math
 import sys
 
-from tools import preprocess
+from tools import preprocess, preferences
 
-db = 'sqlite'
+db = preferences['dbtype']
 
 nhours = 6
 now = time.time()
@@ -58,7 +58,7 @@ maxv = 10
 def angle(x):
     x = min(x,maxv)
     return (1-x/maxv)*math.pi
-value = 8.1
+value = df['power'].values[-1]
 sa = angle(value)
 
 ds = ColumnDataSource(dict(sa=[sa],valtext=['{:3.2f}'.format(value)]))
@@ -79,22 +79,23 @@ p.add_layout(mytext2)
 
 def update():
     global last_id, last_time
+    df = None
     if db == 'mongo':
         cursor = adc.find({'_id':{'$gt':last_id}})
         data = list(cursor)
         if len(data):
-            print('streaming data', len(data))
             last_id = data[-1]['_id']
             df = pd.DataFrame(data)
     elif db == 'sqlite':
         df = pd.read_sql_query('SELECT * FROM adc WHERE time>{}'.format(int(last_time)), conn)
-        print(df)
-        last_time = df['time'].values[-1]
-    preprocess(df)
-    source.stream(df)
-    last_val = df['power'].values[-1]
-    mytext.text = '{:3.2f}'.format(last_val)
-    ds.patch({'sa':[(0,angle(last_val))]})
+        if len(df):
+            last_time = df['time'].values[-1]
+    if len(df):
+        preprocess(df)
+        source.stream(df)
+        last_val = df['power'].values[-1]
+        mytext.text = '{:3.2f}'.format(last_val)
+        ds.patch({'sa':[(0,angle(last_val))]})
 
 
 layout = column([p1,p])
