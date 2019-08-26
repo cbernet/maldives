@@ -50,7 +50,7 @@ def preprocess(df, rmid=True):
     '''
     if not len(df):
         return df
-    if rmid: 
+    if rmid and '_id' in df: 
         del df['_id']
     df['timeparis'] = df['time'] + 3600*2
     df['dt'] = pd.to_datetime(df['timeparis'],unit='s')

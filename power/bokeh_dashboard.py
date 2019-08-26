@@ -7,29 +7,35 @@ import pandas as pd
 # from datetime import datetime, timedelta
 import time
 
-import pymongo
 import math
 import sys
 
-from preprocess import preprocess
+from tools import preprocess
 
-client = pymongo.MongoClient('localhost',27017)
-mydb = client['power']
-adc = mydb['adc']
+db = 'sqlite'
 
-nhours = 0.5
+nhours = 6
 now = time.time()
 t1 = now - 3600*nhours
 
-cursor = adc.find({'time': {'$gt':t1}})
-data = list(cursor)
-last_id = data[-1]['_id']
-df = pd.DataFrame(data)
-# print(df.head)
-# sys.exit(1)
-
+df, last_id, last_time = None, None, None
+if db == 'mongo':
+    import pymongo
+    client = pymongo.MongoClient('localhost',27017)
+    mydb = client['power']
+    adc = mydb['adc']
+    cursor = adc.find({'time': {'$gt':t1}})
+    data = list(cursor)
+    last_id = data[-1]['_id']
+    last_time = data[-1]['time']
+    df = pd.DataFrame(data)
+elif db == 'sqlite':
+    from db_sqlite import conn
+    print('time', t1)
+    df = pd.read_sql_query('SELECT * FROM adc WHERE time>{}'.format(int(t1)), conn)
+    last_time = df.tail(1)['time']
+    
 preprocess(df)
-
 source = ColumnDataSource(df)
 
 # history plot 
@@ -72,18 +78,23 @@ p.add_layout(mytext)
 p.add_layout(mytext2)
 
 def update():
-    global last_id
-    cursor = adc.find({'_id':{'$gt':last_id}})
-    data = list(cursor)
-    if len(data):
-        print('streaming data', len(data))
-        last_id = data[-1]['_id']
-        df = pd.DataFrame(data)
-        preprocess_df(df)
-        source.stream(df)
-        last_val = df['power'].values[-1]
-        mytext.text = '{:3.2f}'.format(last_val)
-        ds.patch({'sa':[(0,angle(last_val))]})
+    global last_id, last_time
+    if db == 'mongo':
+        cursor = adc.find({'_id':{'$gt':last_id}})
+        data = list(cursor)
+        if len(data):
+            print('streaming data', len(data))
+            last_id = data[-1]['_id']
+            df = pd.DataFrame(data)
+    elif db == 'sqlite':
+        df = pd.read_sql_query('SELECT * FROM adc WHERE time>{}'.format(int(last_time)), conn)
+        print(df)
+        last_time = df['time'].values[-1]
+    preprocess(df)
+    source.stream(df)
+    last_val = df['power'].values[-1]
+    mytext.text = '{:3.2f}'.format(last_val)
+    ds.patch({'sa':[(0,angle(last_val))]})
 
 
 layout = column([p1,p])

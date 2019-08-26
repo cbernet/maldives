@@ -32,10 +32,16 @@ def ReadChannel(channel):
   return data
 
 # setup database access
-client = pymongo.MongoClient('localhost',27017)
-mydb = client['power']
-adc = mydb['adc']
 
+db = 'sqlite'
+
+if db == 'mongo':
+  client = pymongo.MongoClient('localhost',27017)
+  mydb = client['power']
+  adc = mydb['adc']
+elif db == 'sqlite':
+  import db_sqlite
+  
 # Define delay between readings (s)
 nsamples = 1000
 delay = 1.
@@ -58,10 +64,12 @@ while 1:
     'maxadc':maxadc,
     'time':now
   }
-  adc.insert(summary)
-  pprint.pprint(summary)
-  time.sleep(delay)
-
+  pprint.pprint(summary)  
+  if db == 'mongo':
+    adc.insert(summary)
+    time.sleep(delay)
+  elif db == 'sqlite':
+    db_sqlite.insert(summary)
   
 # while True:
 #   print(ReadChannel(0))
