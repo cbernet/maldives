@@ -96,8 +96,4 @@ VALUES ({time}, {channel}, {rms}, {mean}, {minadc}, {maxadc})
     conn.commit()
 
 if __name__ == '__main__':
-    import time
-    nhours = 6
-    now = time.time()
-    mintime = now - 3600*nhours
-    print(select(mintime))
+    migrate_from_mongo()
