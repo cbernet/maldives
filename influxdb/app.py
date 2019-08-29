@@ -14,7 +14,8 @@ measurement = 'sinwave'
 def connect_db(reset):
     '''connect to the database, and create it if it does not exist'''
     global client
-    client = InfluxDBClient('localhost', 8086)
+    print('connecting to database')
+    client = InfluxDBClient('influxdb', 8086)
     print(client.get_list_database())
     create = True
     for db in client.get_list_database():

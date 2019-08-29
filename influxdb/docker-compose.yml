@@ -7,12 +7,24 @@ services:
       - "8086:8086"
     volumes:
       - influxdb:/var/lib/influxdb
-    networks:
-      - net
+#    networks:
+#      - net
+#  test:
+#    image: testapp
+#    container_name: test
+#    networks:
+#      - net
+  sensor:
+    build: .
+    container_name: sensor
+#    links:
+#      - influxdb
+#    networks:
+#      - net
 
 volumes:
   influxdb:
   
-networks:
-  net:
+#networks:
+#  net:
 
