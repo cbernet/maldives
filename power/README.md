@@ -109,6 +109,12 @@ Then, update your code to the latest version:
 git pull origin
 ```
 
+Migrate the data from mongodb to sqlite: 
+
+```
+python db_sqlite.py
+```
+
 And finally restart the daemons: 
 
 ```
