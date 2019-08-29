@@ -4,6 +4,7 @@ import datetime
 import math
 import pprint
 import os
+import signal
 
 client = None
 dbname = 'mydb'
@@ -55,7 +56,8 @@ def get_entries():
     results = client.query('select * from {}'.format(measurement))
     # we decide not to use the x tag
     return list(results[(measurement, None)])
-           
+
+    
 if __name__ == '__main__':
     import sys
     
@@ -77,6 +79,15 @@ if __name__ == '__main__':
     options, args = parser.parse_args()
     
     connect_db(options.reset)
+
+    def signal_handler(sig, frame):
+        print()
+        print('stopping')
+        pprint.pprint(get_entries())
+        sys.exit(0)
+    signal.signal(signal.SIGINT, signal_handler)
+
     measure(options.nmeasurements)
+        
     pprint.pprint(get_entries())
 
