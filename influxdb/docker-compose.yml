@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 services:
   influxdb:
     image: influxdb
@@ -8,11 +8,11 @@ services:
       - influxdb:/var/lib/influxdb
   sensor:
     build: .
-#    image: cbernet/iot_dummy_sensor:1.0
+#    image: cbernet/iot_dummy_sensor
     links:
       - influxdb
   dashboard:
-    image: grafana/grafana
+    image: proxx/grafana-armv7
     links:
       - sensor
     ports:
