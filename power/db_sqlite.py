@@ -1,9 +1,22 @@
 import sqlite3
 import os
 
+# default connection to main db: 
 db_fname = os.path.join(os.environ['HOME'], 'power.db')
 conn = sqlite3.connect(db_fname)
 
+def connect(fname):
+    '''connect to a db, possibly different from the main one'''
+    global db_fname, conn
+    db_fname = fname
+    conn = sqlite3.connect(db_fname)
+
+    
+def disconnect():
+    '''close current connection'''
+    conn.close()
+
+    
 def cmd(func):
     '''decorator ensuring that the cursor is properly opened and closed'''
     def wrapped(*args, **kwargs):
@@ -13,20 +26,33 @@ def cmd(func):
         return results
     return wrapped
 
+
 @cmd
-def create_db():
-    '''Create database and adc table'''
+def create_db(crs, fname):
+    '''create database, 
+    with the adc, hour, and day tables.
+    used to create both the main and test databases
+    '''
+    pass
+
+@cmd
+def create_table(crs, tablename='adc'):
+    '''Create table (adc by default).
+    time, minadc, maxadc are stored as real and not integers, 
+    because raw data will be averaged (to real) in the hour
+    table
+    '''
     crs.execute('''
-CREATE TABLE adc (
-    time integer, 
+CREATE TABLE {} (
+    time real, 
     channel integer, 
     rms real, 
     mean real, 
-    minadc integer, 
-    maxadc integer,
+    minadc real, 
+    maxadc real,
     PRIMARY KEY (time, channel)
-);
-''')
+);'''.format(tablename)
+)
 
 @cmd
 def create_index(crs):
@@ -82,6 +108,8 @@ INSERT INTO adc VALUES (
 
 @cmd
 def insert(crs, summary):
+    '''insert summary dict as a record.
+    '''
     crs.execute(
 '''
 INSERT INTO adc (time, channel, rms, mean, minadc, maxadc)
