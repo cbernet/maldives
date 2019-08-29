@@ -1,4 +1,6 @@
 from influxdb import InfluxDBClient
+from requests.exceptions import ConnectionError
+
 import time
 import datetime
 import math
@@ -10,24 +12,35 @@ client = None
 dbname = 'mydb'
 measurement = 'sinwave'
 
+def db_exists():
+    for db in client.get_list_database():
+        if db['name'] == dbname:
+            return True
+    return False
 
 def connect_db(reset):
     '''connect to the database, and create it if it does not exist'''
     global client
     print('connecting to database')
     client = InfluxDBClient('influxdb', 8086)
-    print(client.get_list_database())
-    create = True
-    for db in client.get_list_database():
-        if db['name'] == dbname:
-            create = False
+    while 1:
+        try: 
+            print(client.get_list_database())
             break
-    if create:
-        print('creating database')
+        except ConnectionError:
+            print('retrying')
+            time.sleep(1)
+    create = False
+    if not db_exists():
+        create = True
+        print('creating database...')
+        client.create_database(dbname)
+        while not db_exists():
+            time.sleep(1)
     else:
         print('database already exists')
     client.switch_database(dbname)
-    if reset:
+    if not create and reset:
         client.delete_series(measurement=measurement)
 
     

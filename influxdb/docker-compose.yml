@@ -2,29 +2,24 @@ version: "3"
 services:
   influxdb:
     image: influxdb
-    container_name: influxdb
     ports:
       - "8086:8086"
     volumes:
       - influxdb:/var/lib/influxdb
-#    networks:
-#      - net
-#  test:
-#    image: testapp
-#    container_name: test
-#    networks:
-#      - net
   sensor:
     build: .
-    container_name: sensor
-#    links:
-#      - influxdb
-#    networks:
-#      - net
+#    image: cbernet/iot_dummy_sensor:1.0
+    links:
+      - influxdb
+  dashboard:
+    image: grafana/grafana
+    links:
+      - sensor
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana:/var/lib/grafana
 
 volumes:
   influxdb:
-  
-#networks:
-#  net:
-
+  grafana:
