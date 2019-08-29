@@ -16,7 +16,6 @@ import spidev
 import time
 import os
 import numpy as np
-import pymongo
 import pprint
 
 from tools import preferences
@@ -38,6 +37,7 @@ def ReadChannel(channel):
 
 db = preferences['dbtype']
 if db == 'mongo':
+  import pymongo
   client = pymongo.MongoClient('localhost',27017)
   mydb = client['power']
   adc = mydb['adc']
