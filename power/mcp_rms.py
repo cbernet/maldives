@@ -16,26 +16,34 @@ import spidev
 import time
 import os
 import numpy as np
-import pymongo
 import pprint
+
+from tools import preferences
 
 # Open SPI bus
 spi = spidev.SpiDev()
 spi.open(0,0)
  
-# Function to read SPI data from MCP3008 chip
-# Channel must be an integer 0-7
 def ReadChannel(channel):
+  '''Function to read SPI data from MCP3008 chip
+  Channel must be an integer 0-7
+  '''
   spi.max_speed_hz=50000
   adc = spi.xfer2([1,(8+channel)<<4,0])
   data = ((adc[1]&3) << 8) + adc[2]
   return data
 
 # setup database access
-client = pymongo.MongoClient('localhost',27017)
-mydb = client['power']
-adc = mydb['adc']
 
+db = preferences['dbtype']
+if db == 'mongo':
+  import pymongo
+  client = pymongo.MongoClient('localhost',27017)
+  mydb = client['power']
+  adc = mydb['adc']
+elif db == 'sqlite':
+  import db_sqlite
+  
 # Define delay between readings (s)
 nsamples = 1000
 delay = 1.
@@ -49,7 +57,6 @@ while 1:
   minadc = data.min()
   maxadc = data.max()
   now = time.time()
-#   print('read', nsamples, 'samples', mean, rms, minadc, maxadc, time)
   summary = {
     'channel':0,
     'mean':mean,
@@ -58,14 +65,10 @@ while 1:
     'maxadc':maxadc,
     'time':now
   }
-  adc.insert(summary)
-  pprint.pprint(summary)
-  time.sleep(delay)
-
-  
-# while True:
-#   print(ReadChannel(0))
-   
-#   # Wait before repeating loop
-#   time.sleep(delay)
+  pprint.pprint(summary)  
+  if db == 'mongo':
+    adc.insert(summary)
+    time.sleep(delay)
+  elif db == 'sqlite':
+    db_sqlite.insert(summary)
 

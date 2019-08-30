@@ -1,20 +1,24 @@
+'''Not used but kept for future reference
+'''
+
 import pandas as pd
-from tools import MongoCollection, preprocess
+from db_sqlite import conn
+from tools import preprocess
+
+
 
 if __name__ == '__main__':
-
-    collection = MongoCollection('adc')
-
-    data = collection.time_find(72)
-    df = pd.DataFrame(data)
-
-    df = preprocess(df, rmid=False)
-    print(df.head())
+    
+    df = pd.read_sql_query('SELECT * FROM adc ORDER BY time DESC LIMIT 50000', conn)
+    df = preprocess(df)
+    print(df.head(1000))
     
     dfh = df.resample('H').mean()
     print(dfh)
 
-    meanh = MongoCollection('meanh')
-    meanh.collection.insert_many(dfh.to_dict('records'))
+    dfh.to_sql('hour', conn, if_exists='replace')
+    
+    # meanh = MongoCollection('meanh')
+    # meanh.collection.insert_many(dfh.to_dict('records'))
 
 
