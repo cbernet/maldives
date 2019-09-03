@@ -32,6 +32,7 @@ while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
     if ret is False:
+        print('no frame')
         break
 
     fcount.start()
@@ -44,10 +45,8 @@ while(True):
 
         # detect people in the image
         # returns the bounding boxes for the detected objects
-        boxes, weights = hog.detectMultiScale(frame, winStride=(8,8) )
-        
+        boxes, weights = hog.detectMultiScale(frame, winStride=(8,8) )        
         boxes = np.array([[x, y, x + w, y + h] for (x, y, w, h) in boxes])
-        
         for (xA, yA, xB, yB) in boxes:
             # display the detected boxes in the colour picture
             cv2.rectangle(frame, (xA, yA), (xB, yB),
