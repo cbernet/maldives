@@ -22,9 +22,10 @@ def db_exists():
             return True
     return False
 
-def wait_for_server(host, port, nretries=5, waiting_time=1):
+def wait_for_server(host, port, nretries=5):
     '''wait for the server to come online for waiting_time, nretries times.'''
     url = 'http://{}:{}'.format(host, port)
+    waiting_time = 1
     for i in range(nretries):
         try:
             requests.get(url)
@@ -32,6 +33,7 @@ def wait_for_server(host, port, nretries=5, waiting_time=1):
         except requests.exceptions.ConnectionError:
             print('waiting for', url)
             time.sleep(waiting_time)
+            waiting_time *= 2
             pass
     print('cannot connect to', url)
     sys.exit(1)
