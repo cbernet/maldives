@@ -7,7 +7,7 @@ services:
     volumes:
       - influxdb:/var/lib/influxdb
   sensor:
-    image: cbernet/iot_dummy_sensor
+    image: cbernet/iot_dummy_sensor:v1.0-X86_64
     links:
       - influxdb
   dashboard:
