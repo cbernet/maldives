@@ -1,0 +1,27 @@
+version: "3"
+services:
+  influxdb:
+    image: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb:/var/lib/influxdb
+  sensor:
+    image: power_mcp3008
+    # build: .
+    devices: 
+      - /dev/spidev0.0:/dev/spidev0.0
+    links:
+      - influxdb
+  dashboard:
+    image: grafana/grafana
+    links:
+      - sensor
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana:/var/lib/grafana
+
+volumes:
+  influxdb:
+  grafana:
