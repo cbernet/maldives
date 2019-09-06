@@ -7,7 +7,7 @@ services:
     volumes:
       - influxdb:/var/lib/influxdb
   sensor:
-    image: power_mcp3008
+    image: cbernet/power_mcp3008:armv7l
     # build: .
     devices: 
       - /dev/spidev0.0:/dev/spidev0.0
