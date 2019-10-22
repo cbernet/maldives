@@ -3,38 +3,6 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Outline">Outline<a class="anchor-link" href="#Outline">&#182;</a></h2><p>Title : <strong>Powerful image recognition with transfer learning</strong></p>
-<p>Goal:</p>
-<ul>
-<li>learn how to use a variety of pretrained models. We will get good performance from using a sophisticated model. </li>
-<li>The goal is NOT hyperparameter optimization. we will do educated guess and explain them. </li>
-<li>The goal is NOT to compare the different pre-trained models, but to show how they can be used practically. </li>
-</ul>
-<p>Outline:</p>
-<ul>
-<li>Introduction </li>
-<li>What is transfer learning? </li>
-<li>Running this tutorial </li>
-<li>Initialisation </li>
-<li>VGG16</li>
-<li>VGG19</li>
-<li>ResNet50</li>
-<li>Saving the model</li>
-<li>Evaluating the model and studying the results</li>
-<li>Conclusion</li>
-</ul>
-<p><strong>TODO</strong></p>
-<ul>
-<li>compress photo</li>
-</ul>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Running-this-tutorial">Running this tutorial<a class="anchor-link" href="#Running-this-tutorial">&#182;</a></h2><p>To run this tutorial, you will need:</p>
 <ul>
 <li>a Linux or Windows PC with a GPU. </li>
@@ -49,7 +17,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[156]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># define and move to dataset directory</span>
@@ -81,7 +49,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[157]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">tensorflow.keras.preprocessing.image</span> <span class="k">import</span> <span class="n">ImageDataGenerator</span>
@@ -129,12 +97,7 @@
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The functions has two parameters, <code>shape</code> and <code>preprocessing</code>, which depend on the pre-trained model in use.</p>
-<p>For instance, the various models have been trained on images with different shapes:</p>
-<ul>
-<li>(224,224,3) for VGG16, VGG19, and ResNet50, so images with three color channels and 224x224 pixels.</li>
-<li>(299,299,3) for InceptionV3. </li>
-</ul>
-<p>The iterators load the dog and cat images from the disk and convert these images to arrays with the given <code>shape</code>. If the shape is wrong, the images will not be adapted to the model, and the code will crash. So we'll have to be careful to choose the correct shape for each pre-trained model we're going to use.</p>
+<p>The iterators load the dog and cat images from the disk and convert these images to arrays with the given <code>shape</code>. If the shape is wrong, the images will not be adapted to the model, and the code will crash. So we'll have to be careful to choose the correct shape for each pre-trained model we're going to use. VGG16, VGG19, and ResNet50 all take images of shape (224,224,3), so with three color channels in 224x224 pixels. But InceptionV3, for example, would take images of shape (299,299,3).</p>
 <p>The iterators are created by a keras <code>ImageDataGenerator</code> that does the following:</p>
 <ul>
 <li>it has a 50% chance to flip left and right in the image. This provides basic data augmentation without much cost in terms of computing. Indeed, the flipping is easily carried out under the hood by numpy in a very efficient way.  </li>
@@ -156,7 +119,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[158]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">plot_history</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">yrange</span><span class="p">):</span>
@@ -215,7 +178,7 @@
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="prompt input_prompt">In&nbsp;[159]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">vgg16</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">vgg16</span>
@@ -302,17 +265,7 @@ _________________________________________________________________
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The first part of the model, which I'll call the convolutional part in the following, is made of five blocks of stacked convolutional layers, followed by a max pooling layer. This part produces a tensor of shape (7,7,512) for each input image (see the output of the <code>block5_pool</code> layer).</p>
-<p>The first two dimensions, (7,7), are aligned with the dimensions of the original image, and we can think of this as a very coarse version of the image, with only 7x7=49 large pixels. But for each pixel, instead of having 3 color channels, we have 512 features that describe what the network is seeing in this pixel (and also around it).</p>
-<p>This tensor therefore contains 7x7x512 = 25 088 numbers that are the features extracted by the network for the image.</p>
-<p>But what exactly are these "features"?</p>
-<p>In my post about <a href="https://thedatafrog.com/human-detection-video/">Real Time Human Detection with OpenCV</a> we have used a clever (and fairly complicated) algorithm, the Histograms of Oriented Gradients (HOG), to extract the image features (basically the lines and flat surfaces in the image). These features are then interpreted by a Support Vector Machine (SVM) to decide whether there is a human in the detection window or not.</p>
-<p>Here, and generally speaking in deep learning, we instead let the network discover the features by itself during the training! No need to design and code a complicated feature extraction algorithm, we just give the network a structure with enough flexibility, and we train it by examples.</p>
-<p>Think of a baby.</p>
-<p><img src="DSC_3435.jpg" alt="">
-<em>1 day, can already see</em></p>
-<p>I don't know much about the human brain nor human vision, and have only limited experience with babies! (got two.) Anyway here is what I think. Take it as an analogy, maybe it's right, maybe it's wrong, but I find it interesting.</p>
-<p>During the very first hours of its life, the baby has to learn how to see. And by that I mean to make sense of the overwhelming signal streams that come from her eyes. I suspect that at first, the baby learns how to see lines, by connecting the information from neighbouring retina rods and cones. Then, she starts seeing shapes, and recognizing objects. This is some kind of an unsupervised learning process: you just need to move your eyes to see that things are connected, no need to be shown examples. And much, much later, the baby will be able to use supervised learning: cat! she says. No, this is a tiger.</p>
+<p>We clearly see the convolutional part and the classifier part. Between the two, a Flatten layer converts the feature tensor of shape (7,7,512) to a 1D array with 7x7x512 = 25088 values, that can be sent as input to the first Dense layer of the classifier.</p>
 
 </div>
 </div>
@@ -321,25 +274,7 @@ _________________________________________________________________
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>VGG16, as we downloaded it, was trained on the large ImageNet dataset and is already able to see. 
-But it has also been trained to classify the images in the 1000 categories of ImageNet.</p>
-<p>The classification occurs in the second part of the model, which takes the image features in input and picks a category. As we can see in the model summary,</p>
-
-<pre><code>_________________________________________________________________
-flatten (Flatten)            (None, 25088)             0         
-_________________________________________________________________
-fc1 (Dense)                  (None, 4096)              102764544 
-_________________________________________________________________
-fc2 (Dense)                  (None, 4096)              16781312  
-_________________________________________________________________
-predictions (Dense)          (None, 1000)              4097000</code></pre>
-<p>this part is made of:</p>
-<ul>
-<li>a Flatten layer that turns the (7,7,512) feature tensor into a 1D array of size 7x7x512 = 25088; </li>
-<li>two hidden Dense layers with 4096 neurons each;</li>
-<li>a Dense layer with 1000 neurons, one for each category. The softmax activation function is used for these neurons, so that the 1000 values they spit out sum up to unity, and can be considered as probabilities. </li>
-</ul>
-<p>But our task is to classify dog and cat pictures, so we have only two categories.</p>
+<p>The classifier is adapted to the 1000 categories of ImageNet. Our task, however, is to classify dog and cat pictures, so we have only two categories.</p>
 <p>What can we do? With keras, it's easy to import only the convolutional part of VGG16, by setting the <code>include_top</code> parameter to <code>False</code>:</p>
 
 </div>
@@ -347,7 +282,7 @@ predictions (Dense)          (None, 1000)              4097000</code></pre>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="prompt input_prompt">In&nbsp;[160]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">vgg16</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">vgg16</span>
@@ -434,11 +369,10 @@ _________________________________________________________________
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="prompt input_prompt">In&nbsp;[162]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">del</span> <span class="n">x</span>
-<span class="kn">from</span> <span class="nn">keras.preprocessing</span> <span class="k">import</span> <span class="n">image</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">keras.preprocessing</span> <span class="k">import</span> <span class="n">image</span>
 
 <span class="n">img_path</span> <span class="o">=</span> <span class="s1">&#39;dogs/dog.1.jpg&#39;</span>
 
@@ -529,7 +463,7 @@ So we create training and validation iterators to produce such images, with the 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="prompt input_prompt">In&nbsp;[163]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">generators</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span><span class="mi">224</span><span class="p">),</span> <span class="n">preprocessing</span><span class="o">=</span><span class="n">vgg16</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">)</span>
@@ -579,7 +513,7 @@ Found 2496 images belonging to 2 classes.
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[48]:</div>
+<div class="prompt input_prompt">In&nbsp;[164]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">conv_model</span> <span class="o">=</span> <span class="n">vgg16</span><span class="o">.</span><span class="n">VGG16</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">,</span> <span class="n">include_top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span><span class="mi">224</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
@@ -604,7 +538,7 @@ Found 2496 images belonging to 2 classes.
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[49]:</div>
+<div class="prompt input_prompt">In&nbsp;[165]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># flatten the output of the convolutional part: </span>
@@ -638,7 +572,7 @@ Found 2496 images belonging to 2 classes.
 <pre>_________________________________________________________________
 Layer (type)                 Output Shape              Param #   
 =================================================================
-input_8 (InputLayer)         (None, 224, 224, 3)       0         
+input_5 (InputLayer)         (None, 224, 224, 3)       0         
 _________________________________________________________________
 block1_conv1 (Conv2D)        (None, 224, 224, 64)      1792      
 _________________________________________________________________
@@ -676,15 +610,15 @@ block5_conv3 (Conv2D)        (None, 14, 14, 512)       2359808
 _________________________________________________________________
 block5_pool (MaxPooling2D)   (None, 7, 7, 512)         0         
 _________________________________________________________________
-flatten_4 (Flatten)          (None, 25088)             0         
+flatten_2 (Flatten)          (None, 25088)             0         
 _________________________________________________________________
-dense_10 (Dense)             (None, 100)               2508900   
+dense_8 (Dense)              (None, 100)               2508900   
 _________________________________________________________________
-dense_11 (Dense)             (None, 100)               10100     
+dense_9 (Dense)              (None, 100)               10100     
 _________________________________________________________________
-dense_12 (Dense)             (None, 100)               10100     
+dense_10 (Dense)             (None, 100)               10100     
 _________________________________________________________________
-dense_13 (Dense)             (None, 2)                 202       
+dense_11 (Dense)             (None, 2)                 202       
 =================================================================
 Total params: 17,243,990
 Trainable params: 17,243,990
@@ -709,7 +643,7 @@ _________________________________________________________________
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[50]:</div>
+<div class="prompt input_prompt">In&nbsp;[166]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">conv_model</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
@@ -732,7 +666,7 @@ _________________________________________________________________
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[51]:</div>
+<div class="prompt input_prompt">In&nbsp;[167]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">full_model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
@@ -755,7 +689,7 @@ _________________________________________________________________
 <pre>_________________________________________________________________
 Layer (type)                 Output Shape              Param #   
 =================================================================
-input_8 (InputLayer)         (None, 224, 224, 3)       0         
+input_5 (InputLayer)         (None, 224, 224, 3)       0         
 _________________________________________________________________
 block1_conv1 (Conv2D)        (None, 224, 224, 64)      1792      
 _________________________________________________________________
@@ -793,15 +727,15 @@ block5_conv3 (Conv2D)        (None, 14, 14, 512)       2359808
 _________________________________________________________________
 block5_pool (MaxPooling2D)   (None, 7, 7, 512)         0         
 _________________________________________________________________
-flatten_4 (Flatten)          (None, 25088)             0         
+flatten_2 (Flatten)          (None, 25088)             0         
 _________________________________________________________________
-dense_10 (Dense)             (None, 100)               2508900   
+dense_8 (Dense)              (None, 100)               2508900   
 _________________________________________________________________
-dense_11 (Dense)             (None, 100)               10100     
+dense_9 (Dense)              (None, 100)               10100     
 _________________________________________________________________
-dense_12 (Dense)             (None, 100)               10100     
+dense_10 (Dense)             (None, 100)               10100     
 _________________________________________________________________
-dense_13 (Dense)             (None, 2)                 202       
+dense_11 (Dense)             (None, 2)                 202       
 =================================================================
 Total params: 17,243,990
 Trainable params: 2,529,302
@@ -826,7 +760,7 @@ _________________________________________________________________
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[52]:</div>
+<div class="prompt input_prompt">In&nbsp;[168]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="mi">2508900</span><span class="o">+</span><span class="mi">10100</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">202</span>
@@ -842,7 +776,7 @@ _________________________________________________________________
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[52]:</div>
+<div class="prompt output_prompt">Out[168]:</div>
 
 
 
@@ -970,7 +904,7 @@ Epoch 5/5
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We see that the model is very fast to train, as we just need to train the classifier part. One epoch is actually enough to reach a validation accuracy of about 98%, much higher than the 92% we got when we trained a simple convolutional network from scratch on our own in <a href="https://thedatafrog.com/dogs-vs-cats/">Image Recognition: Dogs vs Cats!</a>.</p>
 <p>After that, the accuracy plateaus. Overfitting is moderate and is limiting performance. We could probably work on overfitting by simplifying the classifier, or by adding a dropout layer just before the classifier. But this is out of scope for this post.</p>
-<h2 id="A-brief-digression-about-statistical-uncertainty">A brief digression about statistical uncertainty<a class="anchor-link" href="#A-brief-digression-about-statistical-uncertainty">&#182;</a></h2><p>Note that value of the accuracy should not be taken too seriously. The validation accuracy depends on the specific validation sample that has been chosen by the generator, and this number is affected by statistical uncertainty. Roughly speaking, we have 2500 images in the validation dataset. An inaccuracy of 2% means that we misclassify 50 images.</p>
+<h3 id="A-brief-digression-about-statistical-uncertainty">A brief digression about statistical uncertainty<a class="anchor-link" href="#A-brief-digression-about-statistical-uncertainty">&#182;</a></h3><p>Note that value of the accuracy should not be taken too seriously. The validation accuracy depends on the specific validation sample that has been chosen by the generator, and this number is affected by statistical uncertainty. Roughly speaking, we have 2500 images in the validation dataset. An inaccuracy of 2% means that we misclassify 50 images.</p>
 <p>Since this number is fairly small, it is affected by fairly large statistical uncertainty. And we can estimate the relative uncertainty on this number as $1/\sqrt{50} \sim 15\%$. The <em>relative</em> uncertainty on the inaccuracy is also of the order of 15%. So for a 2% inaccuracy, we have an absolute uncertainty of 2 x 0.15 = 0.3%.</p>
 <p>Therefore, when we talk about a 98% accuracy, you should remember that the true accuracy should within $98 \pm 0.3\%$.</p>
 <p>We could use a larger validation dataset to reduce the uncertainty, but this would leave less images for the training of our neural networks.</p>
@@ -992,7 +926,7 @@ Epoch 5/5
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[55]:</div>
+<div class="prompt input_prompt">In&nbsp;[169]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">vgg19</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">vgg19</span>
@@ -1025,7 +959,7 @@ Epoch 5/5
 <pre>_________________________________________________________________
 Layer (type)                 Output Shape              Param #   
 =================================================================
-input_9 (InputLayer)         (None, 224, 224, 3)       0         
+input_6 (InputLayer)         (None, 224, 224, 3)       0         
 _________________________________________________________________
 block1_conv1 (Conv2D)        (None, 224, 224, 64)      1792      
 _________________________________________________________________
@@ -1069,15 +1003,15 @@ block5_conv4 (Conv2D)        (None, 14, 14, 512)       2359808
 _________________________________________________________________
 block5_pool (MaxPooling2D)   (None, 7, 7, 512)         0         
 _________________________________________________________________
-flatten_5 (Flatten)          (None, 25088)             0         
+flatten_3 (Flatten)          (None, 25088)             0         
 _________________________________________________________________
-dense_14 (Dense)             (None, 100)               2508900   
+dense_12 (Dense)             (None, 100)               2508900   
 _________________________________________________________________
-dense_15 (Dense)             (None, 100)               10100     
+dense_13 (Dense)             (None, 100)               10100     
 _________________________________________________________________
-dense_16 (Dense)             (None, 100)               10100     
+dense_14 (Dense)             (None, 100)               10100     
 _________________________________________________________________
-dense_17 (Dense)             (None, 2)                 202       
+dense_15 (Dense)             (None, 2)                 202       
 =================================================================
 Total params: 22,553,686
 Trainable params: 2,529,302
@@ -1200,7 +1134,7 @@ Epoch 5/5
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[170]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">resnet50</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">resnet50</span>
@@ -1234,7 +1168,7 @@ Found 2496 images belonging to 2 classes.
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[171]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">conv_model</span> <span class="o">=</span> <span class="n">resnet50</span><span class="o">.</span><span class="n">ResNet50</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s1">&#39;imagenet&#39;</span><span class="p">,</span> <span class="n">include_top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span><span class="mi">224</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
@@ -1278,381 +1212,381 @@ Found 2496 images belonging to 2 classes.
 <pre>__________________________________________________________________________________________________
 Layer (type)                    Output Shape         Param #     Connected to                     
 ==================================================================================================
-input_1 (InputLayer)            (None, 224, 224, 3)  0                                            
+input_7 (InputLayer)            (None, 224, 224, 3)  0                                            
 __________________________________________________________________________________________________
-conv1_pad (ZeroPadding2D)       (None, 230, 230, 3)  0           input_1[0][0]                    
+conv1_pad (ZeroPadding2D)       (None, 230, 230, 3)  0           input_7[0][0]                    
 __________________________________________________________________________________________________
 conv1 (Conv2D)                  (None, 112, 112, 64) 9472        conv1_pad[0][0]                  
 __________________________________________________________________________________________________
 bn_conv1 (BatchNormalization)   (None, 112, 112, 64) 256         conv1[0][0]                      
 __________________________________________________________________________________________________
-activation (Activation)         (None, 112, 112, 64) 0           bn_conv1[0][0]                   
+activation_98 (Activation)      (None, 112, 112, 64) 0           bn_conv1[0][0]                   
 __________________________________________________________________________________________________
-pool1_pad (ZeroPadding2D)       (None, 114, 114, 64) 0           activation[0][0]                 
+pool1_pad (ZeroPadding2D)       (None, 114, 114, 64) 0           activation_98[0][0]              
 __________________________________________________________________________________________________
-max_pooling2d (MaxPooling2D)    (None, 56, 56, 64)   0           pool1_pad[0][0]                  
+max_pooling2d_2 (MaxPooling2D)  (None, 56, 56, 64)   0           pool1_pad[0][0]                  
 __________________________________________________________________________________________________
-res2a_branch2a (Conv2D)         (None, 56, 56, 64)   4160        max_pooling2d[0][0]              
+res2a_branch2a (Conv2D)         (None, 56, 56, 64)   4160        max_pooling2d_2[0][0]            
 __________________________________________________________________________________________________
 bn2a_branch2a (BatchNormalizati (None, 56, 56, 64)   256         res2a_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_1 (Activation)       (None, 56, 56, 64)   0           bn2a_branch2a[0][0]              
+activation_99 (Activation)      (None, 56, 56, 64)   0           bn2a_branch2a[0][0]              
 __________________________________________________________________________________________________
-res2a_branch2b (Conv2D)         (None, 56, 56, 64)   36928       activation_1[0][0]               
+res2a_branch2b (Conv2D)         (None, 56, 56, 64)   36928       activation_99[0][0]              
 __________________________________________________________________________________________________
 bn2a_branch2b (BatchNormalizati (None, 56, 56, 64)   256         res2a_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_2 (Activation)       (None, 56, 56, 64)   0           bn2a_branch2b[0][0]              
+activation_100 (Activation)     (None, 56, 56, 64)   0           bn2a_branch2b[0][0]              
 __________________________________________________________________________________________________
-res2a_branch2c (Conv2D)         (None, 56, 56, 256)  16640       activation_2[0][0]               
+res2a_branch2c (Conv2D)         (None, 56, 56, 256)  16640       activation_100[0][0]             
 __________________________________________________________________________________________________
-res2a_branch1 (Conv2D)          (None, 56, 56, 256)  16640       max_pooling2d[0][0]              
+res2a_branch1 (Conv2D)          (None, 56, 56, 256)  16640       max_pooling2d_2[0][0]            
 __________________________________________________________________________________________________
 bn2a_branch2c (BatchNormalizati (None, 56, 56, 256)  1024        res2a_branch2c[0][0]             
 __________________________________________________________________________________________________
 bn2a_branch1 (BatchNormalizatio (None, 56, 56, 256)  1024        res2a_branch1[0][0]              
 __________________________________________________________________________________________________
-add (Add)                       (None, 56, 56, 256)  0           bn2a_branch2c[0][0]              
+add_32 (Add)                    (None, 56, 56, 256)  0           bn2a_branch2c[0][0]              
                                                                  bn2a_branch1[0][0]               
 __________________________________________________________________________________________________
-activation_3 (Activation)       (None, 56, 56, 256)  0           add[0][0]                        
+activation_101 (Activation)     (None, 56, 56, 256)  0           add_32[0][0]                     
 __________________________________________________________________________________________________
-res2b_branch2a (Conv2D)         (None, 56, 56, 64)   16448       activation_3[0][0]               
+res2b_branch2a (Conv2D)         (None, 56, 56, 64)   16448       activation_101[0][0]             
 __________________________________________________________________________________________________
 bn2b_branch2a (BatchNormalizati (None, 56, 56, 64)   256         res2b_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_4 (Activation)       (None, 56, 56, 64)   0           bn2b_branch2a[0][0]              
+activation_102 (Activation)     (None, 56, 56, 64)   0           bn2b_branch2a[0][0]              
 __________________________________________________________________________________________________
-res2b_branch2b (Conv2D)         (None, 56, 56, 64)   36928       activation_4[0][0]               
+res2b_branch2b (Conv2D)         (None, 56, 56, 64)   36928       activation_102[0][0]             
 __________________________________________________________________________________________________
 bn2b_branch2b (BatchNormalizati (None, 56, 56, 64)   256         res2b_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_5 (Activation)       (None, 56, 56, 64)   0           bn2b_branch2b[0][0]              
+activation_103 (Activation)     (None, 56, 56, 64)   0           bn2b_branch2b[0][0]              
 __________________________________________________________________________________________________
-res2b_branch2c (Conv2D)         (None, 56, 56, 256)  16640       activation_5[0][0]               
+res2b_branch2c (Conv2D)         (None, 56, 56, 256)  16640       activation_103[0][0]             
 __________________________________________________________________________________________________
 bn2b_branch2c (BatchNormalizati (None, 56, 56, 256)  1024        res2b_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_1 (Add)                     (None, 56, 56, 256)  0           bn2b_branch2c[0][0]              
-                                                                 activation_3[0][0]               
+add_33 (Add)                    (None, 56, 56, 256)  0           bn2b_branch2c[0][0]              
+                                                                 activation_101[0][0]             
 __________________________________________________________________________________________________
-activation_6 (Activation)       (None, 56, 56, 256)  0           add_1[0][0]                      
+activation_104 (Activation)     (None, 56, 56, 256)  0           add_33[0][0]                     
 __________________________________________________________________________________________________
-res2c_branch2a (Conv2D)         (None, 56, 56, 64)   16448       activation_6[0][0]               
+res2c_branch2a (Conv2D)         (None, 56, 56, 64)   16448       activation_104[0][0]             
 __________________________________________________________________________________________________
 bn2c_branch2a (BatchNormalizati (None, 56, 56, 64)   256         res2c_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_7 (Activation)       (None, 56, 56, 64)   0           bn2c_branch2a[0][0]              
+activation_105 (Activation)     (None, 56, 56, 64)   0           bn2c_branch2a[0][0]              
 __________________________________________________________________________________________________
-res2c_branch2b (Conv2D)         (None, 56, 56, 64)   36928       activation_7[0][0]               
+res2c_branch2b (Conv2D)         (None, 56, 56, 64)   36928       activation_105[0][0]             
 __________________________________________________________________________________________________
 bn2c_branch2b (BatchNormalizati (None, 56, 56, 64)   256         res2c_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_8 (Activation)       (None, 56, 56, 64)   0           bn2c_branch2b[0][0]              
+activation_106 (Activation)     (None, 56, 56, 64)   0           bn2c_branch2b[0][0]              
 __________________________________________________________________________________________________
-res2c_branch2c (Conv2D)         (None, 56, 56, 256)  16640       activation_8[0][0]               
+res2c_branch2c (Conv2D)         (None, 56, 56, 256)  16640       activation_106[0][0]             
 __________________________________________________________________________________________________
 bn2c_branch2c (BatchNormalizati (None, 56, 56, 256)  1024        res2c_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_2 (Add)                     (None, 56, 56, 256)  0           bn2c_branch2c[0][0]              
-                                                                 activation_6[0][0]               
+add_34 (Add)                    (None, 56, 56, 256)  0           bn2c_branch2c[0][0]              
+                                                                 activation_104[0][0]             
 __________________________________________________________________________________________________
-activation_9 (Activation)       (None, 56, 56, 256)  0           add_2[0][0]                      
+activation_107 (Activation)     (None, 56, 56, 256)  0           add_34[0][0]                     
 __________________________________________________________________________________________________
-res3a_branch2a (Conv2D)         (None, 28, 28, 128)  32896       activation_9[0][0]               
+res3a_branch2a (Conv2D)         (None, 28, 28, 128)  32896       activation_107[0][0]             
 __________________________________________________________________________________________________
 bn3a_branch2a (BatchNormalizati (None, 28, 28, 128)  512         res3a_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_10 (Activation)      (None, 28, 28, 128)  0           bn3a_branch2a[0][0]              
+activation_108 (Activation)     (None, 28, 28, 128)  0           bn3a_branch2a[0][0]              
 __________________________________________________________________________________________________
-res3a_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_10[0][0]              
+res3a_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_108[0][0]             
 __________________________________________________________________________________________________
 bn3a_branch2b (BatchNormalizati (None, 28, 28, 128)  512         res3a_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_11 (Activation)      (None, 28, 28, 128)  0           bn3a_branch2b[0][0]              
+activation_109 (Activation)     (None, 28, 28, 128)  0           bn3a_branch2b[0][0]              
 __________________________________________________________________________________________________
-res3a_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_11[0][0]              
+res3a_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_109[0][0]             
 __________________________________________________________________________________________________
-res3a_branch1 (Conv2D)          (None, 28, 28, 512)  131584      activation_9[0][0]               
+res3a_branch1 (Conv2D)          (None, 28, 28, 512)  131584      activation_107[0][0]             
 __________________________________________________________________________________________________
 bn3a_branch2c (BatchNormalizati (None, 28, 28, 512)  2048        res3a_branch2c[0][0]             
 __________________________________________________________________________________________________
 bn3a_branch1 (BatchNormalizatio (None, 28, 28, 512)  2048        res3a_branch1[0][0]              
 __________________________________________________________________________________________________
-add_3 (Add)                     (None, 28, 28, 512)  0           bn3a_branch2c[0][0]              
+add_35 (Add)                    (None, 28, 28, 512)  0           bn3a_branch2c[0][0]              
                                                                  bn3a_branch1[0][0]               
 __________________________________________________________________________________________________
-activation_12 (Activation)      (None, 28, 28, 512)  0           add_3[0][0]                      
+activation_110 (Activation)     (None, 28, 28, 512)  0           add_35[0][0]                     
 __________________________________________________________________________________________________
-res3b_branch2a (Conv2D)         (None, 28, 28, 128)  65664       activation_12[0][0]              
+res3b_branch2a (Conv2D)         (None, 28, 28, 128)  65664       activation_110[0][0]             
 __________________________________________________________________________________________________
 bn3b_branch2a (BatchNormalizati (None, 28, 28, 128)  512         res3b_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_13 (Activation)      (None, 28, 28, 128)  0           bn3b_branch2a[0][0]              
+activation_111 (Activation)     (None, 28, 28, 128)  0           bn3b_branch2a[0][0]              
 __________________________________________________________________________________________________
-res3b_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_13[0][0]              
+res3b_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_111[0][0]             
 __________________________________________________________________________________________________
 bn3b_branch2b (BatchNormalizati (None, 28, 28, 128)  512         res3b_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_14 (Activation)      (None, 28, 28, 128)  0           bn3b_branch2b[0][0]              
+activation_112 (Activation)     (None, 28, 28, 128)  0           bn3b_branch2b[0][0]              
 __________________________________________________________________________________________________
-res3b_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_14[0][0]              
+res3b_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_112[0][0]             
 __________________________________________________________________________________________________
 bn3b_branch2c (BatchNormalizati (None, 28, 28, 512)  2048        res3b_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_4 (Add)                     (None, 28, 28, 512)  0           bn3b_branch2c[0][0]              
-                                                                 activation_12[0][0]              
+add_36 (Add)                    (None, 28, 28, 512)  0           bn3b_branch2c[0][0]              
+                                                                 activation_110[0][0]             
 __________________________________________________________________________________________________
-activation_15 (Activation)      (None, 28, 28, 512)  0           add_4[0][0]                      
+activation_113 (Activation)     (None, 28, 28, 512)  0           add_36[0][0]                     
 __________________________________________________________________________________________________
-res3c_branch2a (Conv2D)         (None, 28, 28, 128)  65664       activation_15[0][0]              
+res3c_branch2a (Conv2D)         (None, 28, 28, 128)  65664       activation_113[0][0]             
 __________________________________________________________________________________________________
 bn3c_branch2a (BatchNormalizati (None, 28, 28, 128)  512         res3c_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_16 (Activation)      (None, 28, 28, 128)  0           bn3c_branch2a[0][0]              
+activation_114 (Activation)     (None, 28, 28, 128)  0           bn3c_branch2a[0][0]              
 __________________________________________________________________________________________________
-res3c_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_16[0][0]              
+res3c_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_114[0][0]             
 __________________________________________________________________________________________________
 bn3c_branch2b (BatchNormalizati (None, 28, 28, 128)  512         res3c_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_17 (Activation)      (None, 28, 28, 128)  0           bn3c_branch2b[0][0]              
+activation_115 (Activation)     (None, 28, 28, 128)  0           bn3c_branch2b[0][0]              
 __________________________________________________________________________________________________
-res3c_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_17[0][0]              
+res3c_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_115[0][0]             
 __________________________________________________________________________________________________
 bn3c_branch2c (BatchNormalizati (None, 28, 28, 512)  2048        res3c_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_5 (Add)                     (None, 28, 28, 512)  0           bn3c_branch2c[0][0]              
-                                                                 activation_15[0][0]              
+add_37 (Add)                    (None, 28, 28, 512)  0           bn3c_branch2c[0][0]              
+                                                                 activation_113[0][0]             
 __________________________________________________________________________________________________
-activation_18 (Activation)      (None, 28, 28, 512)  0           add_5[0][0]                      
+activation_116 (Activation)     (None, 28, 28, 512)  0           add_37[0][0]                     
 __________________________________________________________________________________________________
-res3d_branch2a (Conv2D)         (None, 28, 28, 128)  65664       activation_18[0][0]              
+res3d_branch2a (Conv2D)         (None, 28, 28, 128)  65664       activation_116[0][0]             
 __________________________________________________________________________________________________
 bn3d_branch2a (BatchNormalizati (None, 28, 28, 128)  512         res3d_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_19 (Activation)      (None, 28, 28, 128)  0           bn3d_branch2a[0][0]              
+activation_117 (Activation)     (None, 28, 28, 128)  0           bn3d_branch2a[0][0]              
 __________________________________________________________________________________________________
-res3d_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_19[0][0]              
+res3d_branch2b (Conv2D)         (None, 28, 28, 128)  147584      activation_117[0][0]             
 __________________________________________________________________________________________________
 bn3d_branch2b (BatchNormalizati (None, 28, 28, 128)  512         res3d_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_20 (Activation)      (None, 28, 28, 128)  0           bn3d_branch2b[0][0]              
+activation_118 (Activation)     (None, 28, 28, 128)  0           bn3d_branch2b[0][0]              
 __________________________________________________________________________________________________
-res3d_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_20[0][0]              
+res3d_branch2c (Conv2D)         (None, 28, 28, 512)  66048       activation_118[0][0]             
 __________________________________________________________________________________________________
 bn3d_branch2c (BatchNormalizati (None, 28, 28, 512)  2048        res3d_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_6 (Add)                     (None, 28, 28, 512)  0           bn3d_branch2c[0][0]              
-                                                                 activation_18[0][0]              
+add_38 (Add)                    (None, 28, 28, 512)  0           bn3d_branch2c[0][0]              
+                                                                 activation_116[0][0]             
 __________________________________________________________________________________________________
-activation_21 (Activation)      (None, 28, 28, 512)  0           add_6[0][0]                      
+activation_119 (Activation)     (None, 28, 28, 512)  0           add_38[0][0]                     
 __________________________________________________________________________________________________
-res4a_branch2a (Conv2D)         (None, 14, 14, 256)  131328      activation_21[0][0]              
+res4a_branch2a (Conv2D)         (None, 14, 14, 256)  131328      activation_119[0][0]             
 __________________________________________________________________________________________________
 bn4a_branch2a (BatchNormalizati (None, 14, 14, 256)  1024        res4a_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_22 (Activation)      (None, 14, 14, 256)  0           bn4a_branch2a[0][0]              
+activation_120 (Activation)     (None, 14, 14, 256)  0           bn4a_branch2a[0][0]              
 __________________________________________________________________________________________________
-res4a_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_22[0][0]              
+res4a_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_120[0][0]             
 __________________________________________________________________________________________________
 bn4a_branch2b (BatchNormalizati (None, 14, 14, 256)  1024        res4a_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_23 (Activation)      (None, 14, 14, 256)  0           bn4a_branch2b[0][0]              
+activation_121 (Activation)     (None, 14, 14, 256)  0           bn4a_branch2b[0][0]              
 __________________________________________________________________________________________________
-res4a_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_23[0][0]              
+res4a_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_121[0][0]             
 __________________________________________________________________________________________________
-res4a_branch1 (Conv2D)          (None, 14, 14, 1024) 525312      activation_21[0][0]              
+res4a_branch1 (Conv2D)          (None, 14, 14, 1024) 525312      activation_119[0][0]             
 __________________________________________________________________________________________________
 bn4a_branch2c (BatchNormalizati (None, 14, 14, 1024) 4096        res4a_branch2c[0][0]             
 __________________________________________________________________________________________________
 bn4a_branch1 (BatchNormalizatio (None, 14, 14, 1024) 4096        res4a_branch1[0][0]              
 __________________________________________________________________________________________________
-add_7 (Add)                     (None, 14, 14, 1024) 0           bn4a_branch2c[0][0]              
+add_39 (Add)                    (None, 14, 14, 1024) 0           bn4a_branch2c[0][0]              
                                                                  bn4a_branch1[0][0]               
 __________________________________________________________________________________________________
-activation_24 (Activation)      (None, 14, 14, 1024) 0           add_7[0][0]                      
+activation_122 (Activation)     (None, 14, 14, 1024) 0           add_39[0][0]                     
 __________________________________________________________________________________________________
-res4b_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_24[0][0]              
+res4b_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_122[0][0]             
 __________________________________________________________________________________________________
 bn4b_branch2a (BatchNormalizati (None, 14, 14, 256)  1024        res4b_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_25 (Activation)      (None, 14, 14, 256)  0           bn4b_branch2a[0][0]              
+activation_123 (Activation)     (None, 14, 14, 256)  0           bn4b_branch2a[0][0]              
 __________________________________________________________________________________________________
-res4b_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_25[0][0]              
+res4b_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_123[0][0]             
 __________________________________________________________________________________________________
 bn4b_branch2b (BatchNormalizati (None, 14, 14, 256)  1024        res4b_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_26 (Activation)      (None, 14, 14, 256)  0           bn4b_branch2b[0][0]              
+activation_124 (Activation)     (None, 14, 14, 256)  0           bn4b_branch2b[0][0]              
 __________________________________________________________________________________________________
-res4b_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_26[0][0]              
+res4b_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_124[0][0]             
 __________________________________________________________________________________________________
 bn4b_branch2c (BatchNormalizati (None, 14, 14, 1024) 4096        res4b_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_8 (Add)                     (None, 14, 14, 1024) 0           bn4b_branch2c[0][0]              
-                                                                 activation_24[0][0]              
+add_40 (Add)                    (None, 14, 14, 1024) 0           bn4b_branch2c[0][0]              
+                                                                 activation_122[0][0]             
 __________________________________________________________________________________________________
-activation_27 (Activation)      (None, 14, 14, 1024) 0           add_8[0][0]                      
+activation_125 (Activation)     (None, 14, 14, 1024) 0           add_40[0][0]                     
 __________________________________________________________________________________________________
-res4c_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_27[0][0]              
+res4c_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_125[0][0]             
 __________________________________________________________________________________________________
 bn4c_branch2a (BatchNormalizati (None, 14, 14, 256)  1024        res4c_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_28 (Activation)      (None, 14, 14, 256)  0           bn4c_branch2a[0][0]              
+activation_126 (Activation)     (None, 14, 14, 256)  0           bn4c_branch2a[0][0]              
 __________________________________________________________________________________________________
-res4c_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_28[0][0]              
+res4c_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_126[0][0]             
 __________________________________________________________________________________________________
 bn4c_branch2b (BatchNormalizati (None, 14, 14, 256)  1024        res4c_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_29 (Activation)      (None, 14, 14, 256)  0           bn4c_branch2b[0][0]              
+activation_127 (Activation)     (None, 14, 14, 256)  0           bn4c_branch2b[0][0]              
 __________________________________________________________________________________________________
-res4c_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_29[0][0]              
+res4c_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_127[0][0]             
 __________________________________________________________________________________________________
 bn4c_branch2c (BatchNormalizati (None, 14, 14, 1024) 4096        res4c_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_9 (Add)                     (None, 14, 14, 1024) 0           bn4c_branch2c[0][0]              
-                                                                 activation_27[0][0]              
+add_41 (Add)                    (None, 14, 14, 1024) 0           bn4c_branch2c[0][0]              
+                                                                 activation_125[0][0]             
 __________________________________________________________________________________________________
-activation_30 (Activation)      (None, 14, 14, 1024) 0           add_9[0][0]                      
+activation_128 (Activation)     (None, 14, 14, 1024) 0           add_41[0][0]                     
 __________________________________________________________________________________________________
-res4d_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_30[0][0]              
+res4d_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_128[0][0]             
 __________________________________________________________________________________________________
 bn4d_branch2a (BatchNormalizati (None, 14, 14, 256)  1024        res4d_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_31 (Activation)      (None, 14, 14, 256)  0           bn4d_branch2a[0][0]              
+activation_129 (Activation)     (None, 14, 14, 256)  0           bn4d_branch2a[0][0]              
 __________________________________________________________________________________________________
-res4d_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_31[0][0]              
+res4d_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_129[0][0]             
 __________________________________________________________________________________________________
 bn4d_branch2b (BatchNormalizati (None, 14, 14, 256)  1024        res4d_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_32 (Activation)      (None, 14, 14, 256)  0           bn4d_branch2b[0][0]              
+activation_130 (Activation)     (None, 14, 14, 256)  0           bn4d_branch2b[0][0]              
 __________________________________________________________________________________________________
-res4d_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_32[0][0]              
+res4d_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_130[0][0]             
 __________________________________________________________________________________________________
 bn4d_branch2c (BatchNormalizati (None, 14, 14, 1024) 4096        res4d_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_10 (Add)                    (None, 14, 14, 1024) 0           bn4d_branch2c[0][0]              
-                                                                 activation_30[0][0]              
+add_42 (Add)                    (None, 14, 14, 1024) 0           bn4d_branch2c[0][0]              
+                                                                 activation_128[0][0]             
 __________________________________________________________________________________________________
-activation_33 (Activation)      (None, 14, 14, 1024) 0           add_10[0][0]                     
+activation_131 (Activation)     (None, 14, 14, 1024) 0           add_42[0][0]                     
 __________________________________________________________________________________________________
-res4e_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_33[0][0]              
+res4e_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_131[0][0]             
 __________________________________________________________________________________________________
 bn4e_branch2a (BatchNormalizati (None, 14, 14, 256)  1024        res4e_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_34 (Activation)      (None, 14, 14, 256)  0           bn4e_branch2a[0][0]              
+activation_132 (Activation)     (None, 14, 14, 256)  0           bn4e_branch2a[0][0]              
 __________________________________________________________________________________________________
-res4e_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_34[0][0]              
+res4e_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_132[0][0]             
 __________________________________________________________________________________________________
 bn4e_branch2b (BatchNormalizati (None, 14, 14, 256)  1024        res4e_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_35 (Activation)      (None, 14, 14, 256)  0           bn4e_branch2b[0][0]              
+activation_133 (Activation)     (None, 14, 14, 256)  0           bn4e_branch2b[0][0]              
 __________________________________________________________________________________________________
-res4e_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_35[0][0]              
+res4e_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_133[0][0]             
 __________________________________________________________________________________________________
 bn4e_branch2c (BatchNormalizati (None, 14, 14, 1024) 4096        res4e_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_11 (Add)                    (None, 14, 14, 1024) 0           bn4e_branch2c[0][0]              
-                                                                 activation_33[0][0]              
+add_43 (Add)                    (None, 14, 14, 1024) 0           bn4e_branch2c[0][0]              
+                                                                 activation_131[0][0]             
 __________________________________________________________________________________________________
-activation_36 (Activation)      (None, 14, 14, 1024) 0           add_11[0][0]                     
+activation_134 (Activation)     (None, 14, 14, 1024) 0           add_43[0][0]                     
 __________________________________________________________________________________________________
-res4f_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_36[0][0]              
+res4f_branch2a (Conv2D)         (None, 14, 14, 256)  262400      activation_134[0][0]             
 __________________________________________________________________________________________________
 bn4f_branch2a (BatchNormalizati (None, 14, 14, 256)  1024        res4f_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_37 (Activation)      (None, 14, 14, 256)  0           bn4f_branch2a[0][0]              
+activation_135 (Activation)     (None, 14, 14, 256)  0           bn4f_branch2a[0][0]              
 __________________________________________________________________________________________________
-res4f_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_37[0][0]              
+res4f_branch2b (Conv2D)         (None, 14, 14, 256)  590080      activation_135[0][0]             
 __________________________________________________________________________________________________
 bn4f_branch2b (BatchNormalizati (None, 14, 14, 256)  1024        res4f_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_38 (Activation)      (None, 14, 14, 256)  0           bn4f_branch2b[0][0]              
+activation_136 (Activation)     (None, 14, 14, 256)  0           bn4f_branch2b[0][0]              
 __________________________________________________________________________________________________
-res4f_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_38[0][0]              
+res4f_branch2c (Conv2D)         (None, 14, 14, 1024) 263168      activation_136[0][0]             
 __________________________________________________________________________________________________
 bn4f_branch2c (BatchNormalizati (None, 14, 14, 1024) 4096        res4f_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_12 (Add)                    (None, 14, 14, 1024) 0           bn4f_branch2c[0][0]              
-                                                                 activation_36[0][0]              
+add_44 (Add)                    (None, 14, 14, 1024) 0           bn4f_branch2c[0][0]              
+                                                                 activation_134[0][0]             
 __________________________________________________________________________________________________
-activation_39 (Activation)      (None, 14, 14, 1024) 0           add_12[0][0]                     
+activation_137 (Activation)     (None, 14, 14, 1024) 0           add_44[0][0]                     
 __________________________________________________________________________________________________
-res5a_branch2a (Conv2D)         (None, 7, 7, 512)    524800      activation_39[0][0]              
+res5a_branch2a (Conv2D)         (None, 7, 7, 512)    524800      activation_137[0][0]             
 __________________________________________________________________________________________________
 bn5a_branch2a (BatchNormalizati (None, 7, 7, 512)    2048        res5a_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_40 (Activation)      (None, 7, 7, 512)    0           bn5a_branch2a[0][0]              
+activation_138 (Activation)     (None, 7, 7, 512)    0           bn5a_branch2a[0][0]              
 __________________________________________________________________________________________________
-res5a_branch2b (Conv2D)         (None, 7, 7, 512)    2359808     activation_40[0][0]              
+res5a_branch2b (Conv2D)         (None, 7, 7, 512)    2359808     activation_138[0][0]             
 __________________________________________________________________________________________________
 bn5a_branch2b (BatchNormalizati (None, 7, 7, 512)    2048        res5a_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_41 (Activation)      (None, 7, 7, 512)    0           bn5a_branch2b[0][0]              
+activation_139 (Activation)     (None, 7, 7, 512)    0           bn5a_branch2b[0][0]              
 __________________________________________________________________________________________________
-res5a_branch2c (Conv2D)         (None, 7, 7, 2048)   1050624     activation_41[0][0]              
+res5a_branch2c (Conv2D)         (None, 7, 7, 2048)   1050624     activation_139[0][0]             
 __________________________________________________________________________________________________
-res5a_branch1 (Conv2D)          (None, 7, 7, 2048)   2099200     activation_39[0][0]              
+res5a_branch1 (Conv2D)          (None, 7, 7, 2048)   2099200     activation_137[0][0]             
 __________________________________________________________________________________________________
 bn5a_branch2c (BatchNormalizati (None, 7, 7, 2048)   8192        res5a_branch2c[0][0]             
 __________________________________________________________________________________________________
 bn5a_branch1 (BatchNormalizatio (None, 7, 7, 2048)   8192        res5a_branch1[0][0]              
 __________________________________________________________________________________________________
-add_13 (Add)                    (None, 7, 7, 2048)   0           bn5a_branch2c[0][0]              
+add_45 (Add)                    (None, 7, 7, 2048)   0           bn5a_branch2c[0][0]              
                                                                  bn5a_branch1[0][0]               
 __________________________________________________________________________________________________
-activation_42 (Activation)      (None, 7, 7, 2048)   0           add_13[0][0]                     
+activation_140 (Activation)     (None, 7, 7, 2048)   0           add_45[0][0]                     
 __________________________________________________________________________________________________
-res5b_branch2a (Conv2D)         (None, 7, 7, 512)    1049088     activation_42[0][0]              
+res5b_branch2a (Conv2D)         (None, 7, 7, 512)    1049088     activation_140[0][0]             
 __________________________________________________________________________________________________
 bn5b_branch2a (BatchNormalizati (None, 7, 7, 512)    2048        res5b_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_43 (Activation)      (None, 7, 7, 512)    0           bn5b_branch2a[0][0]              
+activation_141 (Activation)     (None, 7, 7, 512)    0           bn5b_branch2a[0][0]              
 __________________________________________________________________________________________________
-res5b_branch2b (Conv2D)         (None, 7, 7, 512)    2359808     activation_43[0][0]              
+res5b_branch2b (Conv2D)         (None, 7, 7, 512)    2359808     activation_141[0][0]             
 __________________________________________________________________________________________________
 bn5b_branch2b (BatchNormalizati (None, 7, 7, 512)    2048        res5b_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_44 (Activation)      (None, 7, 7, 512)    0           bn5b_branch2b[0][0]              
+activation_142 (Activation)     (None, 7, 7, 512)    0           bn5b_branch2b[0][0]              
 __________________________________________________________________________________________________
-res5b_branch2c (Conv2D)         (None, 7, 7, 2048)   1050624     activation_44[0][0]              
+res5b_branch2c (Conv2D)         (None, 7, 7, 2048)   1050624     activation_142[0][0]             
 __________________________________________________________________________________________________
 bn5b_branch2c (BatchNormalizati (None, 7, 7, 2048)   8192        res5b_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_14 (Add)                    (None, 7, 7, 2048)   0           bn5b_branch2c[0][0]              
-                                                                 activation_42[0][0]              
+add_46 (Add)                    (None, 7, 7, 2048)   0           bn5b_branch2c[0][0]              
+                                                                 activation_140[0][0]             
 __________________________________________________________________________________________________
-activation_45 (Activation)      (None, 7, 7, 2048)   0           add_14[0][0]                     
+activation_143 (Activation)     (None, 7, 7, 2048)   0           add_46[0][0]                     
 __________________________________________________________________________________________________
-res5c_branch2a (Conv2D)         (None, 7, 7, 512)    1049088     activation_45[0][0]              
+res5c_branch2a (Conv2D)         (None, 7, 7, 512)    1049088     activation_143[0][0]             
 __________________________________________________________________________________________________
 bn5c_branch2a (BatchNormalizati (None, 7, 7, 512)    2048        res5c_branch2a[0][0]             
 __________________________________________________________________________________________________
-activation_46 (Activation)      (None, 7, 7, 512)    0           bn5c_branch2a[0][0]              
+activation_144 (Activation)     (None, 7, 7, 512)    0           bn5c_branch2a[0][0]              
 __________________________________________________________________________________________________
-res5c_branch2b (Conv2D)         (None, 7, 7, 512)    2359808     activation_46[0][0]              
+res5c_branch2b (Conv2D)         (None, 7, 7, 512)    2359808     activation_144[0][0]             
 __________________________________________________________________________________________________
 bn5c_branch2b (BatchNormalizati (None, 7, 7, 512)    2048        res5c_branch2b[0][0]             
 __________________________________________________________________________________________________
-activation_47 (Activation)      (None, 7, 7, 512)    0           bn5c_branch2b[0][0]              
+activation_145 (Activation)     (None, 7, 7, 512)    0           bn5c_branch2b[0][0]              
 __________________________________________________________________________________________________
-res5c_branch2c (Conv2D)         (None, 7, 7, 2048)   1050624     activation_47[0][0]              
+res5c_branch2c (Conv2D)         (None, 7, 7, 2048)   1050624     activation_145[0][0]             
 __________________________________________________________________________________________________
 bn5c_branch2c (BatchNormalizati (None, 7, 7, 2048)   8192        res5c_branch2c[0][0]             
 __________________________________________________________________________________________________
-add_15 (Add)                    (None, 7, 7, 2048)   0           bn5c_branch2c[0][0]              
-                                                                 activation_45[0][0]              
+add_47 (Add)                    (None, 7, 7, 2048)   0           bn5c_branch2c[0][0]              
+                                                                 activation_143[0][0]             
 __________________________________________________________________________________________________
-activation_48 (Activation)      (None, 7, 7, 2048)   0           add_15[0][0]                     
+activation_146 (Activation)     (None, 7, 7, 2048)   0           add_47[0][0]                     
 __________________________________________________________________________________________________
-flatten (Flatten)               (None, 100352)       0           activation_48[0][0]              
+flatten_4 (Flatten)             (None, 100352)       0           activation_146[0][0]             
 __________________________________________________________________________________________________
-dense (Dense)                   (None, 100)          10035300    flatten[0][0]                    
+dense_16 (Dense)                (None, 100)          10035300    flatten_4[0][0]                  
 __________________________________________________________________________________________________
-dense_1 (Dense)                 (None, 100)          10100       dense[0][0]                      
+dense_17 (Dense)                (None, 100)          10100       dense_16[0][0]                   
 __________________________________________________________________________________________________
-dense_2 (Dense)                 (None, 100)          10100       dense_1[0][0]                    
+dense_18 (Dense)                (None, 100)          10100       dense_17[0][0]                   
 __________________________________________________________________________________________________
-dense_3 (Dense)                 (None, 2)            202         dense_2[0][0]                    
+dense_19 (Dense)                (None, 2)            202         dense_18[0][0]                   
 ==================================================================================================
 Total params: 33,643,414
 Trainable params: 10,055,702
@@ -1948,7 +1882,7 @@ Epoch 5/5
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Our neural network gives this image a 99.9997% probability. That's actually not too surprising: this is an archetypal dog, so no difficulty here.</p>
+<p>Our neural network gives this image a whopping 99.9997% probability. That's actually not too surprising: this is an archetypal dog, so no difficulty here.</p>
 <p>But what about other images in the dataset? It would be very interesting to look at misidentified images, to see what's going on with them. Let's start by evaluating the model for all images in the <strong>training</strong> dataset:</p>
 
 </div>
@@ -2074,7 +2008,7 @@ Epoch 5/5
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Please note that I have used a log scale on the y axis. I did this because, with this excellent classification accuracy, we end up with most pictures having either a cat score very close to 1 (clear cats), or very close to 0 (clear dogs), such as the example we plotted above. In the middle, we see the more difficult cases.</p>
+<p>Please note that I have used a log scale on the y axis. I did this because, with this excellent classification accuracy, we end up with most pictures having either a cat score very close to 1 (clear cats), or very close to 0 (clear dogs), such as the example we plotted above. We would only see these in linear scale. In the middle, we see the more difficult and interesting cases.</p>
 <p>We can now compute the accuracy.</p>
 <p>For this we need to compute the predicted labels and compare them with the true labels. 
 To compute the predicted labels, we take the cat score, and we decide that the network predicts a cat if this score is larger than a given threshold.</p>
@@ -2307,7 +2241,7 @@ dogs  57 misclassified samples (0.25%)
 <p>With this choice of threshold, we improve the global classification accuracy from 100-0.69 = 99.31% to 100-0.42=99.58%. This is a large gain at this stage!</p>
 <p>So remember:</p>
 <hr>
-<p><strong>Always check the classification score and tune your threshold properly.</strong></p>
+<p><strong>Check the classification score and tune your threshold properly.</strong></p>
 <hr>
 <p>Now, we optimized the threshold on the training dataset. What do we get with the validation dataset?</p>
 
@@ -2677,7 +2611,7 @@ Clipping input data to the valid range for imshow with RGB data ([0..1] for floa
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Our function first adds back the mean of the BGR values, since this was the last operation of the preprocessing. And then we revert again the order of the color levels. What might not be obvious to you is the last line, which reverts the order of the color levels. So let's have a look in details.</p>
 <ul>
-<li>the notation <code>...</code> means: add as many operations as necessary. So we're going to leave the first dimensions of the images untouched, to act only on the last dimension, the one of the color levels (please note that  I'm using keras in channels last mode). </li>
+<li>the notation <code>...</code> means: add as many dimensions as necessary. So we're going to leave the first dimensions of the images untouched, to act only on the last dimension, the one of the color levels (please note that  I'm using keras in channels last mode). </li>
 <li>the notation <code>::-1</code> acts on the last dimension, and revert the order of the numbers there. </li>
 </ul>
 <p>Let's take a simple example. We build an array with shape (2,2,3). You can think of it as an image with 2x2 pixels and 3 color levels:</p>
