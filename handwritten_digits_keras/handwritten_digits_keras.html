@@ -1,64 +1,6 @@
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="About-this-tutorial">About this tutorial<a class="anchor-link" href="#About-this-tutorial">&#182;</a></h2><p>In my post about <a href="https://thedatafrog.com/handwritten-digit-recognition-scikit-learn/">handwritten digit recognition with scikit-learn</a>, we have seen that a simple neural network can easily be trained with <a href="https://scikit-learn.org">scikit-learn</a>. And we managed to classify images of digits with an accuracy larger than 90%.</p>
-<p>But scikit-learn is generally not adapted to neural networks.</p>
-<p>Its goal is in fact to provide a unified interface for training and testing different machine learning algorithms: neural networks, and also support-vector machines, naive Bayes, nearest neighbours, decision trees, etc.</p>
-<p>Indeed, in machine learning projects, you'll spend a large fraction of your time choosing the best algorithm and tuning it for best performance. Scikit-learn was designed to make these tasks as easy as possible.</p>
-<p>However, when it comes to neural networks specifically, scikit-learn has two major drawbacks:</p>
-<ul>
-<li>the interface does not provide enough control to build complex neural networks, nor to control their behaviour in details.</li>
-<li>it's not adapted to <a href="https://thedatafrog.com/install-tensorflow-windows/">deep learning</a></li>
-</ul>
-<p>In this post, we will repeat our exercise about handwritten digit recognition with <a href="https://keras.io/">Keras</a>, a high-level neural networks API. You will learn:</p>
-<ul>
-<li>How to install Keras </li>
-<li>How to create a simple dense neural network with this tool </li>
-<li>How to estimate its performance </li>
-</ul>
-<p>Later on, we will use Keras as an interface to TensorFlow to do deep learning.</p>
-<p><strong>Prerequisites:</strong> You should have some knowledge of:</p>
-<ul>
-<li>numpy, </li>
-<li>matplotlib, </li>
-<li>jupyter notebooks,</li>
-<li>basic neural networks. </li>
-</ul>
-<p>If that's not the case, <a href="https://thedatafrog.com/handwritten-digit-recognition-scikit-learn/">handwritten digit recognition with scikit-learn</a> is just for you!</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Installation">Installation<a class="anchor-link" href="#Installation">&#182;</a></h2><p>First, install <a href="https://www.anaconda.com/download/">Anaconda</a> if not already done.</p>
-<p>Launch the Anaconda Navigator application.</p>
-<p>Enter the Environments tab, and install the keras package in your base (root) environment.</p>
-<p>Solving the package specifications for keras may take a few minutes but you'll eventually get there.</p>
-<p>Then, head to the Home tab, and launch the jupyter notebook.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Finally, get this notebook and open it in the jupyter notebook:</p>
-<ul>
-<li><a href="https://github.com/cbernet/maldives/archive/master.zip">download the repository containing this notebook</a></li>
-<li>unzip it, say to <code>Downloads/maldives-master</code></li>
-<li>in the jupyter notebook, navigate to <code>Downloads/maldives-master/handwritten_digits_keras</code></li>
-<li>open <code>handwritten_digits_keras.ipynb</code></li>
-</ul>
-<p>This page should appear in the notebook. From now on, follow the tutorial in the notebook.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Preparing-the-dataset">Preparing the dataset<a class="anchor-link" href="#Preparing-the-dataset">&#182;</a></h2><p>As in <a href="https://thedatafrog.com/handwritten-digit-recognition-scikit-learn/">handwritten digit recognition with scikit-learn</a>, we are going to use the digits dataset provided by scikit-learn. The digits are 8x8 images and we will feed them to a neural network with:</p>
 <ul>
 <li>an input layer with 8x8 = 64 neurons</li>
@@ -754,10 +696,6 @@ true category 5
 <p>You should obtain an accuracy around 90%, similar to the one we had obtained in the same conditions with scikit-learn.</p>
 <p>Please note that the result is not deterministic, so the accuracy will vary every time you train the network. I usually get an accuracy between 90 and 93%, but I sometimes get a value as low as 87%.</p>
 <p>Please repeat the exercise starting from the creation of the neural network to see what happens.</p>
-<h2 id="What-next?">What next?<a class="anchor-link" href="#What-next?">&#182;</a></h2><p>In this post, you have trained your first neural network with keras.</p>
-<p>Keras is the easiest and most powerful way to work with neural networks, and we will use it very often on this blog.</p>
-<p>Very soon, we'll start to do deep learning on a GPU with keras and TensorFlow.</p>
-<p>More information: <a href="https://keras.io/getting-started/sequential-model-guide/">Guide to the sequential model of keras</a></p>
 
 </div>
 </div>
